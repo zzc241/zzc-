@@ -2,7 +2,6 @@ package com.atguigu.daijia.model.entity.map;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,7 +20,7 @@ public class OrderServiceLocation {
 	@Schema(description = "订单id")
 	private Long orderId;
 
-	@Schema(description = "经度")
+	@Schema(description = "金度")
 	private BigDecimal latitude;
 
 	@Schema(description = "纬度")

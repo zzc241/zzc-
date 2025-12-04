@@ -1,7 +1,6 @@
 package com.atguigu.daijia.model.entity.order;
 
 import com.atguigu.daijia.model.entity.base.BaseEntity;
-import com.atguigu.daijia.model.enums.OrderStatus;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.v3.oas.annotations.media.Schema;
