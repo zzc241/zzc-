@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(value = "service-driver")
 public interface DriverInfoFeignClient {
+    @GetMapping("/driver/info/login/{code}")
+    public Result<Long> login(@PathVariable String code);
 
+    @GetMapping("/driver/info/getDriverLoginInfo/{driverId}")
+    public Result<DriverLoginVo> getDriverLoginInfo(@PathVariable("driverId") Long driverId);
 
 }
