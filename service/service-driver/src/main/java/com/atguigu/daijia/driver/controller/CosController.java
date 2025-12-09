@@ -1,5 +1,6 @@
 package com.atguigu.daijia.driver.controller;
 
+import com.atguigu.daijia.common.login.zzcLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.driver.service.CosService;
 import com.atguigu.daijia.model.vo.driver.CosUploadVo;
@@ -16,6 +17,16 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping(value="/cos")
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class CosController {
+    @Autowired
+    private CosService cosService;
+
+    @Operation(summary = "上传")
+    @PostMapping(value="/upload")
+    public Result<CosUploadVo> upload(@RequestPart ("file") MultipartFile file , 
+    @RequestParam (name = "path" , defaultValue = "auth")String path) {
+        CosUploadVo cosUploadVo =  cosService.upload(file, path);
+        return Result.ok(cosUploadVo);
+    }
 	
 
 

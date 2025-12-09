@@ -12,6 +12,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.atguigu.daijia.common.constant.RedisConstant;
+import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +34,7 @@ public class zzcLoginAspect {
             HttpServletRequest request = sra.getRequest();
             String token = request.getHeader("token");
             if(token == null) {
-                return "请登录";
+                return Result.fail("请登录");
             }
             System.out.println("token:" + token);
             String customerId =(String) redisTemplate.opsForValue().get(RedisConstant.USER_LOGIN_KEY_PREFIX+token);
