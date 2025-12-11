@@ -1,6 +1,5 @@
 package com.atguigu.daijia.driver.controller;
 
-import com.atguigu.daijia.common.login.zzcLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.driver.service.DriverInfoService;
@@ -9,19 +8,12 @@ import com.atguigu.daijia.model.form.driver.DriverFaceModelForm;
 import com.atguigu.daijia.model.form.driver.UpdateDriverAuthInfoForm;
 import com.atguigu.daijia.model.vo.driver.DriverAuthInfoVo;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,68 +48,20 @@ public class DriverInfoController {
         return Result.ok(driverInfoService.getDriverAuthInfo(driverId));
     }
 
-
-
-    // @Operation(summary = "更新司机认证信息")
-    // @PostMapping("/updateDriverAuthInfo")
-    // public Result<Boolean> updateDriverAuthInfo(@RequestBody UpdateDriverAuthInfoForm updateDriverAuthInfoForm) {
-    //     log.info("DriverController收到修改司机认证信息请求，updateDriverAuthInfoForm={}", updateDriverAuthInfoForm);
-    //     Boolean isSuccess = driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm);
-    //     return Result.ok(isSuccess);
-    // }
-    // private final ObjectMapper objectMapper;
-    // public DriverInfoController(DriverInfoService driverInfoService, ObjectMapper objectMapper) {
-    //     this.driverInfoService = driverInfoService;
-    //     this.objectMapper = objectMapper;
-    // }
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Operation(summary = "更新司机认证信息")
     @PostMapping("/updateDriverAuthInfo")
-    public Result<Boolean> updateDriverAuthInfo(HttpServletRequest request) {
-        String rawBody;
-        try {
-            rawBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-            // 步骤2：手动将JSON转为TestForm（排除@RequestBody的自动绑定问题）
-            UpdateDriverAuthInfoForm updateDriverAuthInfoForm = objectMapper.readValue(rawBody, UpdateDriverAuthInfoForm.class);
-            log.info("DriverController收到修改司机认证信息请求，updateDriverAuthInfoForm={}", updateDriverAuthInfoForm);
-            Boolean isSuccess = driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
-        
-        return Result.ok();
+    public Result<Boolean> updateDriverAuthInfo(@RequestBody UpdateDriverAuthInfoForm updateDriverAuthInfoForm) {
+        log.info("DriverController收到修改司机认证信息请求，updateDriverAuthInfoForm={}", updateDriverAuthInfoForm);
+        Boolean isSuccess = driverInfoService.updateDriverAuthInfo(updateDriverAuthInfoForm);
+        return Result.ok(isSuccess);
     }
 
     @Operation(summary = "上传司机人脸模型")
     @PostMapping("/creatDriverFaceModel")
-    // public Result<Boolean> createDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm){
-    //     log.info("DriverController收到上传司机人脸模型请求，driverFaceModelForm={}", driverFaceModelForm);
-    //     Boolean isSuccess = driverInfoService.createDriverFaceModel(driverFaceModelForm);
-    //     return Result.ok(isSuccess);
-    // }
-    public Result<Boolean> createDriverFaceModel(HttpServletRequest request) {
-        String rawBody;
-        try {
-            rawBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-            // 步骤2：手动将JSON转为TestForm（排除@RequestBody的自动绑定问题）
-            DriverFaceModelForm driverFaceModelForm = objectMapper.readValue(rawBody, DriverFaceModelForm.class);
-            // driverFaceModelForm.setDriverId(AuthContextHolder.getUserId());
-            log.info("DriverController收到修改司机认证信息请求，driverFaceModelForm={}", driverFaceModelForm);
-            // String token = request.getHeader("token"); // 对应前端传的token: a48f88b40d17471db3c977a5c5dd0a9c
-            // log.info("请求头中的token：{}", token);
-            Boolean isSuccess = driverInfoService.createDriverFaceModel(driverFaceModelForm);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        
-        
-        return Result.ok();
+    public Result<Boolean> createDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm){
+        log.info("DriverController收到上传司机人脸模型请求，driverFaceModelForm={}", driverFaceModelForm);
+        Boolean isSuccess = driverInfoService.createDriverFaceModel(driverFaceModelForm);
+        return Result.ok(isSuccess);
     }
 }
 
