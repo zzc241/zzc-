@@ -14,4 +14,5 @@ public class TencentCloudProperties {
     private String region;
     private String bucketPrivate;
     
+    private String personGroupId;
 }

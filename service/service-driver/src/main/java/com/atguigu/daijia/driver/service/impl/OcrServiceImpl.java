@@ -30,6 +30,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -95,6 +96,7 @@ public class OcrServiceImpl implements OcrService {
         }catch (IOException e) {
                 e.printStackTrace();
         }
+        log.info("身份证识别失败");
         return null;
     }
 
@@ -147,6 +149,7 @@ public class OcrServiceImpl implements OcrService {
         }catch (IOException e) {
                 e.printStackTrace();
         }
+        log.info("驾驶证识别失败");
         return null;
         
     }

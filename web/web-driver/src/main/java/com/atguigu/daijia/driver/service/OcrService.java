@@ -14,7 +14,5 @@ public interface OcrService {
 
     public IdCardOcrVo idCardOcr(MultipartFile file);
 
-    @Operation(summary = "驾驶证识别")
-    @PostMapping(value="/driverLicenseOcr")
     public DriverLicenseOcrVo driverLicenseOcr(MultipartFile file);
 }
