@@ -177,3 +177,11 @@ rule "计算总金额"
         feeRuleResponse.setTotalAmount(totalAmount);
         System.out.println("计算总金额:" + feeRuleResponse.getTotalAmount() + "元");
 end
+
+rule "test4"
+    no-loop true
+    when
+        eval(true)
+    then
+        System.out.println("test4 执行了");
+end

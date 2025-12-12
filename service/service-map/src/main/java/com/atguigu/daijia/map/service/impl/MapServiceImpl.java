@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class MapServiceImpl implements MapService {
 
-    @Value("tentencent.map.key")
+    @Value("${tencent.map.key}")
     private String key;
     @Autowired
     private RestTemplate restTemplate;
