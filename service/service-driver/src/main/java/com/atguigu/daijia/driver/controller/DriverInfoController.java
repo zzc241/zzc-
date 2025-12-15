@@ -4,6 +4,7 @@ import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.driver.service.DriverInfoService;
 import com.atguigu.daijia.model.entity.driver.DriverInfo;
+import com.atguigu.daijia.model.entity.driver.DriverSet;
 import com.atguigu.daijia.model.form.driver.DriverFaceModelForm;
 import com.atguigu.daijia.model.form.driver.UpdateDriverAuthInfoForm;
 import com.atguigu.daijia.model.vo.driver.DriverAuthInfoVo;
@@ -62,6 +63,13 @@ public class DriverInfoController {
         log.info("DriverController收到上传司机人脸模型请求，driverFaceModelForm={}", driverFaceModelForm);
         Boolean isSuccess = driverInfoService.createDriverFaceModel(driverFaceModelForm);
         return Result.ok(isSuccess);
+    }
+
+
+    @Operation(summary = "获取司机设置信息")
+    @GetMapping("/getDriverSet/{driverId}")
+    public Result<DriverSet> getDriverSet(@PathVariable Long driverId) {
+    return Result.ok(driverInfoService.getDriverSet(driverId));
     }
 }
 

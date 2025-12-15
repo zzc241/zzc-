@@ -215,4 +215,12 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     }
 
 
+    @Override
+    public DriverSet getDriverSet(Long driverId) {
+        LambdaQueryWrapper<DriverSet> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DriverSet::getDriverId, driverId);
+        return driverSetMapper.selectOne(queryWrapper);
+    }
+
+
 }

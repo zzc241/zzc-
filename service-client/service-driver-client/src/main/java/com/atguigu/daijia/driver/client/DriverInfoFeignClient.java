@@ -29,4 +29,12 @@ public interface DriverInfoFeignClient {
 
     @PostMapping("/driver/info/creatDriverFaceModel")
     Result<Boolean> createDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm);
+
+    /**
+     * 获取司机设置信息
+     * @param driverId
+     * @return
+     */
+    @GetMapping("/driver/info/getDriverSet/{driverId}")
+    Result<DriverSet> getDriverSet(@PathVariable("driverId") Long driverId);
 }
