@@ -42,10 +42,12 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public Boolean updateDriverLocation(UpdateDriverLocationForm updateDriverLocationForm) {
+        log.info("updateDriverLocation################Redis GEO添加Key：{}", RedisConstant.DRIVER_GEO_LOCATION);
         Point point = new Point(updateDriverLocationForm.getLongitude().doubleValue(), updateDriverLocationForm.getLatitude().doubleValue());
 
         redisTemplate.opsForGeo().add(RedisConstant.DRIVER_GEO_LOCATION,point, updateDriverLocationForm.getDriverId().toString());
 
+        log.info("updateDriverLocation################Redis GEO添加Key：{}", RedisConstant.DRIVER_GEO_LOCATION);
 
         return true;
     }
@@ -58,8 +60,15 @@ public class LocationServiceImpl implements LocationService {
     //搜索附近满足条件的司机
     @Override
     public List<NearByDriverVo> searchNearByDriver(SearchNearByDriverForm searchNearByDriverForm){
+        log.info("Redis GEO搜索Key：{}", RedisConstant.DRIVER_GEO_LOCATION);
+        log.info("搜索参数：经度={}, 纬度={}, 距离={}KM", 
+             searchNearByDriverForm.getLongitude(),
+             searchNearByDriverForm.getLatitude(),
+             searchNearByDriverForm.getMileageDistance());
         Point point = new Point(searchNearByDriverForm.getLongitude().doubleValue(), searchNearByDriverForm.getLatitude().doubleValue());
-        Distance distance = new Distance(SystemConstant.NEARBY_DRIVER_RADIUS , RedisGeoCommands.DistanceUnit.KILOMETERS);
+        // 修正：使用入参的mileageDistance，而非系统常量
+        Distance distance = new Distance(searchNearByDriverForm.getMileageDistance().doubleValue(), RedisGeoCommands.DistanceUnit.KILOMETERS);
+        // Distance distance = new Distance(SystemConstant.NEARBY_DRIVER_RADIUS , RedisGeoCommands.DistanceUnit.KILOMETERS);
         Circle circle = new Circle(point, distance);
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
                 .includeDistance()

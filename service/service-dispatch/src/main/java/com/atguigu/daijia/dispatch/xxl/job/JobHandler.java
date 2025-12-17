@@ -26,7 +26,6 @@ public class JobHandler {
         }catch (Exception e) {
             e.printStackTrace();
             xxlJobLog.setStatus(0);
-            xxlJobLog.setError(e.getMessage());
         }
         finally {
             Long endTime = System.currentTimeMillis();

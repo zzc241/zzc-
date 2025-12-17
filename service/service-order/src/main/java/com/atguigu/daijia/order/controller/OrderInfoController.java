@@ -1,6 +1,8 @@
 package com.atguigu.daijia.order.controller;
 
+import com.atguigu.daijia.common.login.zzcLogin;
 import com.atguigu.daijia.common.result.Result;
+import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.order.service.OrderInfoService;
 
@@ -32,8 +34,18 @@ public class OrderInfoController {
     @Operation(summary = "根据订单id获取订单状态")
     @GetMapping("/getOrderStatus/{orderId}")
     public Result<Integer> getOrderStatus(@PathVariable Long orderId) {
-    return Result.ok(orderInfoService.getOrderStatus(orderId));
+        return Result.ok(orderInfoService.getOrderStatus(orderId));
     }
 
+
+
+    @Operation(summary = "司机抢单")
+    @GetMapping("/robNewOrder/{driverId}/{orderId}")
+    public Result<Boolean> robNewOrder(@PathVariable Long driverId, @PathVariable Long orderId) {
+        return Result.ok(orderInfoService.robNewOrder(driverId, orderId));
+    }
+
+
+    
 }
 

@@ -49,11 +49,22 @@ public class NewOrderServiceImpl implements NewOrderService {
         LambdaQueryWrapper <OrderJob> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(OrderJob::getOrderId, newOrderTaskVo.getOrderId());
         OrderJob orderJob = orderJobMapper.selectOne(queryWrapper);
+        // if (orderJob == null) {
+        //     Long jobId = xxlJobClient.addAndStart("newOrderTaskHandler", "", "0 0/1 * * * ?", "新订单任务调度" + newOrderTaskVo.getOrderId());
+        //     orderJob = new OrderJob();
+        //     orderJob.setOrderId(newOrderTaskVo.getOrderId());
+        //     orderJob.setId(jobId);
+        //     orderJob.setParameter(JSONObject.toJSONString(newOrderTaskVo));
+        //     orderJobMapper.insert(orderJob);
+        // }
         if (orderJob == null) {
             Long jobId = xxlJobClient.addAndStart("newOrderTaskHandler", "", "0 0/1 * * * ?", "新订单任务调度" + newOrderTaskVo.getOrderId());
             orderJob = new OrderJob();
             orderJob.setOrderId(newOrderTaskVo.getOrderId());
-            orderJob.setId(jobId);
+            // 修正1：给jobId字段赋值（而非id）
+            orderJob.setJobId(jobId); 
+            // 修正2：如果id是自增主键，删除setId，由数据库自增；如果非自增，按需赋值
+            // orderJob.setId(...); // 注释或删除此行（根据主键策略）
             orderJob.setParameter(JSONObject.toJSONString(newOrderTaskVo));
             orderJobMapper.insert(orderJob);
         }
@@ -64,7 +75,8 @@ public class NewOrderServiceImpl implements NewOrderService {
         LambdaQueryWrapper <OrderJob> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(OrderJob::getJobId, jobId);
         OrderJob orderJob = orderJobMapper.selectOne(queryWrapper);
-        if(orderJob != null){
+        //if(orderJob != null)
+        if(orderJob == null){
             log.info("没有创建订单");
             return;
         }

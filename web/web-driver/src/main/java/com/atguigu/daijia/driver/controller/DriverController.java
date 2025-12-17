@@ -31,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class DriverController {
     @Autowired
     private DriverService driverInfoService;
+    @Autowired
+    private DriverService driverService;
 	@Operation(summary = "小程序授权登录")
     @GetMapping("/login/{code}")
     public Result<String> login(@PathVariable String code) {
@@ -69,9 +71,42 @@ public class DriverController {
     @zzcLogin
     @PostMapping("/creatDriverFaceModel")
     public Result<Boolean> createDriverFaceModel(@RequestBody DriverFaceModelForm driverFaceModelForm){
+        driverFaceModelForm.setDriverId(AuthContextHolder.getUserId());
         log.info("DriverController收到上传司机人脸模型请求，driverFaceModelForm={}", driverFaceModelForm);
         Boolean isSuccess = driverInfoService.createDriverFaceModel(driverFaceModelForm);
         return Result.ok(isSuccess);
+    }
+
+    @Operation(summary = "判断司机当日是否进行过人脸识别")
+    @zzcLogin
+    @GetMapping("/isFaceRecognition")
+    Result<Boolean> isFaceRecognition() {
+    Long driverId = AuthContextHolder.getUserId();
+    return Result.ok(driverService.isFaceRecognition(driverId));
+    }
+
+    @Operation(summary = "验证司机人脸")
+    @zzcLogin
+    @PostMapping("/verifyDriverFace")
+    public Result<Boolean> verifyDriverFace(@RequestBody DriverFaceModelForm driverFaceModelForm) {
+        driverFaceModelForm.setDriverId(AuthContextHolder.getUserId());
+        return Result.ok(driverService.verifyDriverFace(driverFaceModelForm));
+    }
+
+    @Operation(summary = "开始接单服务")
+    @zzcLogin
+    @GetMapping("/startService")
+    public Result<Boolean> startService() {
+    Long driverId = AuthContextHolder.getUserId();
+        return Result.ok(driverService.startService(driverId));
+    }
+
+    @Operation(summary = "停止接单服务")
+    @zzcLogin
+    @GetMapping("/stopService")
+    public Result<Boolean> stopService() {
+        Long driverId = AuthContextHolder.getUserId();
+        return Result.ok(driverService.stopService(driverId));
     }
 
 }

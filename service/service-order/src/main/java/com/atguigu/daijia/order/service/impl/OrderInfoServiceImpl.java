@@ -1,6 +1,9 @@
 package com.atguigu.daijia.order.service.impl;
 
+import com.atguigu.daijia.common.constant.RedisConstant;
+import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.Result;
+import com.atguigu.daijia.common.result.ResultCodeEnum;
 import com.atguigu.daijia.model.entity.order.OrderInfo;
 import com.atguigu.daijia.model.entity.order.OrderStatusLog;
 import com.atguigu.daijia.model.enums.OrderStatus;
@@ -15,10 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -31,6 +37,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
     private OrderInfoMapper orderInfoMapper;
     @Autowired
     private OrderStatusLogMapper orderStatusLogMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    
     @Override
     public Long saveOrderInfo(OrderInfoForm orderInfoForm){
 
@@ -47,6 +56,9 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
         this.log(orderInfo.getId(),orderInfo.getStatus());
         log.info("保存订单信息，订单号：{}",orderNo);
+
+        redisTemplate.opsForValue().set(RedisConstant.ORDER_ACCEPT_MARK, 
+            "0", RedisConstant.ORDER_ACCEPT_MARK_EXPIRES_TIME, TimeUnit.MINUTES);
 
         return orderInfo.getId();
     }
@@ -69,6 +81,48 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         //返回null，feign解析会抛出异常，给默认值，后续会用
             return OrderStatus.NULL_ORDER.getStatus();
         }
-    return orderInfo.getStatus();
+        return orderInfo.getStatus();
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean robNewOrder(Long driverId, Long orderId) {
+        log.info("司机抢单{},{}" , driverId, orderId);
+        //抢单成功或取消订单，都会删除该key，redis判断，减少数据库压力
+        if(!redisTemplate.hasKey(RedisConstant.ORDER_ACCEPT_MARK)) {
+            //抢单失败
+            throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+        }
+
+        //修改订单状态及司机id
+        //update order_info set status = 2, driver_id = #{driverId}, accept_time = now() where id = #{id}
+        // //修改字段
+        // LambdaQueryWrapper<OrderInfo> wrapper = new LambdaQueryWrapper<>();
+        // wrapper.eq(OrderInfo::getId,orderId);
+        // OrderInfo orderInfo = orderInfoMapper.selectOne(wrapper);
+        // //设置
+        // orderInfo.setStatus(OrderStatus.ACCEPTED.getStatus());
+        // orderInfo.setDriverId(driverId);
+        // orderInfo.setAcceptTime(new Date());
+
+
+        OrderInfo orderInfo = new OrderInfo();
+        orderInfo.setId(orderId);
+        orderInfo.setStatus(OrderStatus.ACCEPTED.getStatus());
+        orderInfo.setAcceptTime(new Date());
+        orderInfo.setDriverId(driverId);
+        int rows = orderInfoMapper.updateById(orderInfo);
+        if(rows != 1) {
+            //抢单失败
+            throw new GuiguException(ResultCodeEnum.COB_NEW_ORDER_FAIL);
+        }
+
+        //记录日志
+        this.log(orderId, orderInfo.getStatus());
+
+        //删除redis订单标识
+        redisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK);
+        return true;
     }
 }
