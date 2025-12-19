@@ -2,7 +2,12 @@ package com.atguigu.daijia.driver.service;
 
 import java.util.List;
 
+import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
+import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
+import com.atguigu.daijia.model.vo.map.DrivingLineVo;
+import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
 import com.atguigu.daijia.model.vo.order.NewOrderDataVo;
+import com.atguigu.daijia.model.vo.order.OrderInfoVo;
 
 public interface OrderService {
 
@@ -12,5 +17,17 @@ public interface OrderService {
 
     Boolean robNewOrder(Long driverId, Long orderId);
 
+    CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
+
+    CurrentOrderInfoVo searchDriverCurrentOrder(Long driverId);
+
+    OrderInfoVo getOrderInfo(Long orderId, Long customerId);
+    
+    DrivingLineVo calculateDrivingLine(CalculateDrivingLineForm calculateDrivingLineForm);
+
+    Boolean driverArriveStartLocation(Long orderId, Long driverId);
+
+    Boolean updateOrderCart(UpdateOrderCartForm updateOrderCartForm);
+    
 
 }
