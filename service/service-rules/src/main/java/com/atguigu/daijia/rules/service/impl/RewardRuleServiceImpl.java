@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ public class RewardRuleServiceImpl implements RewardRuleService {
 
     @Autowired
     private RewardRuleMapper rewardRuleMapper;
+    @Autowired
+    private KieContainer kieContainer;
     @Override
     public RewardRuleResponseVo calculateOrderRewardFee(RewardRuleRequestForm rewardRuleRequestForm) {
         //封装传入对象
@@ -33,8 +36,9 @@ public class RewardRuleServiceImpl implements RewardRuleService {
         log.info("传入参数：{}", JSON.toJSONString(rewardRuleRequest));
 
         //获取最新订单费用规则
-        RewardRule rewardRule = rewardRuleMapper.selectOne(new LambdaQueryWrapper<RewardRule>().orderByDesc(RewardRule::getId).last("limit 1"));
-        KieSession kieSession = DroolsHelper.loadForRule(rewardRule.getRule());
+        //RewardRule rewardRule = rewardRuleMapper.selectOne(new LambdaQueryWrapper<RewardRule>().orderByDesc(RewardRule::getId).last("limit 1"));
+        // KieSession kieSession = DroolsHelper.loadForRule(rewardRule.getRule());
+        KieSession kieSession = kieContainer.newKieSession(); 
 
         //封装返回对象
         RewardRuleResponse rewardRuleResponse = new RewardRuleResponse();
@@ -49,7 +53,8 @@ public class RewardRuleServiceImpl implements RewardRuleService {
 
         //封装返回对象
         RewardRuleResponseVo rewardRuleResponseVo = new RewardRuleResponseVo();
-        rewardRuleResponseVo.setRewardRuleId(rewardRule.getId());
+        // rewardRuleResponseVo.setRewardRuleId(rewardRule.getId());
+        rewardRuleResponseVo.setRewardRuleId(0L); // 没有数据库ID，设为0或null
         rewardRuleResponseVo.setRewardAmount(rewardRuleResponse.getRewardAmount());
         return rewardRuleResponseVo;
     }

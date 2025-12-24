@@ -171,9 +171,16 @@ public class LocationServiceImpl implements LocationService {
         query.limit(1);
         OrderServiceLocation orderServiceLocation = mongoTemplate.findOne(query, OrderServiceLocation.class);
 
+        log.info("订单服务位置：{}", orderServiceLocation);
         //封装返回对象
         OrderServiceLastLocationVo orderServiceLastLocationVo = new OrderServiceLastLocationVo();
-        BeanUtils.copyProperties(orderServiceLocation, orderServiceLastLocationVo);
+        if (orderServiceLocation != null) {
+            BeanUtils.copyProperties(orderServiceLocation, orderServiceLastLocationVo);
+        } else {
+            // 可选：打印日志，方便排查哪个场景下源对象为null
+            log.warn("源对象为null，跳过属性拷贝 - getOrderServiceLastLocation");
+        }
+        
         return orderServiceLastLocationVo;
     }
 

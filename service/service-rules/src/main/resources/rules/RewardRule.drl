@@ -34,6 +34,6 @@ rule "07:00:00-23:59:59  完成10单后 每单奖励2元"
         $rule:RewardRuleRequest(startTime >= "07:00:00" && startTime <= "23:59:59" && orderNum > 10)
     then
         rewardRuleResponse.setRewardAmount(new BigDecimal("2.0"));
-        System.out.println("00:00:00-06:59:59 奖励：" + rewardRuleResponse.getRewardAmount() + "元");
+        System.out.println("07:00:00-23:59:59 奖励：" + rewardRuleResponse.getRewardAmount() + "元");
 end
 

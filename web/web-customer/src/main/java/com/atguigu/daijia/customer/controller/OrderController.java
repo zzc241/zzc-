@@ -75,6 +75,7 @@ public class OrderController {
     @zzcLogin
     @PostMapping("/submitOrder")
     public Result<Long> submitOrder(@RequestBody SubmitOrderForm submitOrderForm) {
+        submitOrderForm.setCustomerId(AuthContextHolder.getUserId());
         return Result.ok(orderService.submitOrder(submitOrderForm));
     }
 

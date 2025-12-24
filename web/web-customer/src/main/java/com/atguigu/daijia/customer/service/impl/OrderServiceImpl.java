@@ -147,7 +147,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public DriverInfoVo getDriverInfo(Long orderId, Long customerId) {
         OrderInfo orderInfo = orderInfoFeignClient.getOrderInfo(orderId).getData();
-        if (orderInfo.getCustomerId().longValue() != customerId.longValue()) {
+        log.info("订单customer信息：{}", orderInfo.getCustomerId());
+
+        log.info("customer信息：{}", customerId);
+        if (orderInfo.getCustomerId()!= (customerId)) {
             throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
         }
         return driverInfoFeignClient.getDriverInfo(orderInfo.getDriverId()).getData();

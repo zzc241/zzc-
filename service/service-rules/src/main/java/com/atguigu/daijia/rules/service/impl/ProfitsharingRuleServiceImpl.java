@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class ProfitsharingRuleServiceImpl implements ProfitsharingRuleService {
 
     @Autowired
     private ProfitsharingRuleMapper rewardRuleMapper;
+    @Autowired
+    private KieContainer kieContainer;
 
     @Override
     public ProfitsharingRuleResponseVo calculateOrderProfitsharingFee(ProfitsharingRuleRequestForm profitsharingRuleRequestForm) {
@@ -35,9 +38,11 @@ public class ProfitsharingRuleServiceImpl implements ProfitsharingRuleService {
 
         log.info("传入参数：{}" , JSON.toJSONString(profitsharingRuleRequest));
 
-        ProfitsharingRule profitsharingRule = rewardRuleMapper.selectOne(new LambdaQueryWrapper<ProfitsharingRule>().orderByDesc(ProfitsharingRule::getId).last("limit 1"));
 
-        KieSession kieSession = DroolsHelper.loadForRule(profitsharingRule.getRule());
+        KieSession kieSession = kieContainer.newKieSession();
+        // ProfitsharingRule profitsharingRule = rewardRuleMapper.selectOne(new LambdaQueryWrapper<ProfitsharingRule>().orderByDesc(ProfitsharingRule::getId).last("limit 1"));
+
+        // KieSession kieSession = DroolsHelper.loadForRule(profitsharingRule.getRule());
 
         ProfitsharingRuleResponse profitsharingRuleResponse = new ProfitsharingRuleResponse();
         kieSession.setGlobal("profitsharingRuleResponse", profitsharingRuleResponse);
@@ -52,7 +57,8 @@ public class ProfitsharingRuleServiceImpl implements ProfitsharingRuleService {
 
         //封装返回对象
         ProfitsharingRuleResponseVo profitsharingRuleResponseVo = new ProfitsharingRuleResponseVo();
-        profitsharingRuleResponseVo.setProfitsharingRuleId(profitsharingRule.getId());
+        // profitsharingRuleResponseVo.setProfitsharingRuleId(profitsharingRule.getId());
+        profitsharingRuleResponseVo.setProfitsharingRuleId(0L); 
         BeanUtils.copyProperties(profitsharingRuleResponse, profitsharingRuleResponseVo);
         return profitsharingRuleResponseVo;
     }

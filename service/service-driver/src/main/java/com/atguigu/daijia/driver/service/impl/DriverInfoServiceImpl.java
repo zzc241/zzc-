@@ -339,7 +339,9 @@ public class DriverInfoServiceImpl extends ServiceImpl<DriverInfoMapper, DriverI
     }
     @Override
     public DriverInfoVo getDriverInfo(Long driverId) {
-        DriverInfo driverInfo = this.getById(driverId);
+        log.info("查询司机信息：{}", driverId);
+        // DriverInfo driverInfo = this.getById(driverId);
+        DriverInfo driverInfo = driverInfoMapper.selectById(driverId);
         DriverInfoVo driverInfoVo = new DriverInfoVo();
         BeanUtils.copyProperties(driverInfo, driverInfoVo);
         //驾龄

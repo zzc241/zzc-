@@ -41,9 +41,13 @@ public class MonitorServiceImpl implements MonitorService {
         orderMonitorRecord.setContent(orderMonitorForm.getContent());
         orderMonitorFeignClient.saveMonitorRecord(orderMonitorRecord);
 
+        log.info("orderMonitorForm:{}",orderMonitorForm);
         TextAuditingVo textAuditingVo = ciFeignClient.textAuditing(orderMonitorForm.getContent()).getData();
-        orderMonitorRecord.setResult(textAuditingVo.getResult());
-        orderMonitorRecord.setKeywords(textAuditingVo.getKeywords());
+        if(textAuditingVo != null){
+            orderMonitorRecord.setResult(textAuditingVo.getResult());
+            orderMonitorRecord.setKeywords(textAuditingVo.getKeywords());
+        }
+        log.info("textAuditingVo:{}",textAuditingVo);
         orderMonitorFeignClient.saveMonitorRecord(orderMonitorRecord);
 
         //更新订单监控统计

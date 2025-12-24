@@ -24,7 +24,6 @@ public class FeeRuleServiceImpl implements FeeRuleService {
     private FeeRuleMapper feeRuleMapper;
     @Autowired
     private KieContainer kieContainer;
-
     @Override
     public FeeRuleResponseVo calculateOrderFee(FeeRuleRequestForm feeRuleRequestForm) {
         FeeRuleResponseVo feeRuleResponseVo = new FeeRuleResponseVo();
