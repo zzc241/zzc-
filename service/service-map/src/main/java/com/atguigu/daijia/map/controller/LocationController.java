@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +85,11 @@ public class LocationController {
         return Result.ok(locationService.getOrderServiceLastLocation(orderId));
     }
 
+    @Operation(summary = "代驾服务：计算订单实际里程")
+    @GetMapping("/calculateOrderRealDistance/{orderId}")
+    public Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId) {
+        return Result.ok(locationService.calculateOrderRealDistance(orderId));
+    }
 
 }
 

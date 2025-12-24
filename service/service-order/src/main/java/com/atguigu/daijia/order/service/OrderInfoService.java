@@ -7,6 +7,7 @@ import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.entity.order.OrderInfo;
 import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
+import com.atguigu.daijia.model.form.order.UpdateOrderBillForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -29,4 +30,9 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     Boolean startDrive(StartDriveForm startDriveForm);
     
+
+    Long getOrderNumByTime(String startTime, String endTime);
+
+    Boolean endDrive(UpdateOrderBillForm updateOrderBillForm);
+
 }

@@ -12,6 +12,7 @@ import com.atguigu.daijia.model.form.driver.DriverFaceModelForm;
 import com.atguigu.daijia.model.form.driver.UpdateDriverAuthInfoForm;
 import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
+import com.atguigu.daijia.model.form.order.UpdateOrderBillForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
@@ -86,5 +87,21 @@ public interface OrderInfoFeignClient {
     @PostMapping("/order/info/startDrive")
     Result<Boolean> startDrive(@RequestBody StartDriveForm startDriveForm);
 
+    /**
+     *  根据时间段获取订单数
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/order/info/getOrderNumByTime/{startTime}/{endTime}")
+    Result<Long> getOrderNumByTime(@PathVariable("startTime") String startTime, @PathVariable("endTime") String endTime);
 
+
+    /**
+     * 结束代驾服务更新订单账单
+     * @param updateOrderBillForm
+     * @return
+     */
+    @PostMapping("/order/info/endDrive")
+    Result<Boolean> endDrive(@RequestBody UpdateOrderBillForm updateOrderBillForm);
 }

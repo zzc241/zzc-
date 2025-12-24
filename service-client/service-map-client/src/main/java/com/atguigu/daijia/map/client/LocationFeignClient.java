@@ -1,5 +1,6 @@
 package com.atguigu.daijia.map.client;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -79,6 +80,13 @@ public interface LocationFeignClient {
     @GetMapping("/map/location/getOrderServiceLastLocation/{orderId}")
     Result<OrderServiceLastLocationVo> getOrderServiceLastLocation(@PathVariable Long orderId);
 
-}
+    /**
+     * 代驾服务：计算订单实际里程
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/map/location/calculateOrderRealDistance/{orderId}")
+    Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId);
+    }
 
 

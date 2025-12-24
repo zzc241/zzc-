@@ -1,7 +1,11 @@
 package com.atguigu.daijia.driver.service.impl;
 
 import org.springframework.util.StringUtils;
+
+import com.atguigu.daijia.common.execption.GuiguException;
+import com.atguigu.daijia.common.result.ResultCodeEnum;
 import com.atguigu.daijia.driver.config.TencentCloudProperties;
+import com.atguigu.daijia.driver.service.CiService;
 import com.atguigu.daijia.driver.service.CosService;
 import com.atguigu.daijia.model.vo.driver.CosUploadVo;
 import com.qcloud.cos.COSClient;
@@ -35,6 +39,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class CosServiceImpl implements CosService {
     @Autowired
     private TencentCloudProperties tencentCloudProperties;
+    @Autowired
+    private CiService ciService;
 
     @Override
     public CosUploadVo upload(MultipartFile file, String path) {
@@ -74,12 +80,21 @@ public class CosServiceImpl implements CosService {
             throw new RuntimeException(e);
         }
         putObjectRequest.setStorageClass(StorageClass.Standard);
-        PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest); //上传文件
+        // PutObjectResult putObjectResult = cosClient.putObject(putObjectRequest); //上传文件
         cosClient.shutdown();
+
+        //图片审核
+        Boolean imageAuditing = ciService.imageAuditing(uploadPath);
+        if(!imageAuditing) {
+            //删除违规图片
+            cosClient.deleteObject(tencentCloudProperties.getBucketPrivate(),uploadPath);
+            throw new GuiguException(ResultCodeEnum.IMAGE_AUDITION_FAIL);
+        }
+
         CosUploadVo cosUploadVo = new CosUploadVo();
         cosUploadVo.setUrl(uploadPath);
-        //TODO 图片临时访问url，回显使用
         cosUploadVo.setShowUrl(getImageURL(uploadPath));
+
         return cosUploadVo;
     }
 
@@ -113,6 +128,7 @@ public class CosServiceImpl implements CosService {
         cosClient.shutdown();
         return url.toString();
     }
+        
 
 
 }

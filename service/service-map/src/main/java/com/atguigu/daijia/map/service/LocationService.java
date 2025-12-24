@@ -1,7 +1,9 @@
 package com.atguigu.daijia.map.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
+import com.atguigu.daijia.model.entity.map.OrderServiceLocation;
 import com.atguigu.daijia.model.form.map.OrderServiceLocationForm;
 import com.atguigu.daijia.model.form.map.SearchNearByDriverForm;
 import com.atguigu.daijia.model.form.map.UpdateDriverLocationForm;
@@ -26,4 +28,9 @@ public interface LocationService {
 
     OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId);
     
+    BigDecimal calculateOrderRealDistance(Long orderId);
+
+    
+
+
 }

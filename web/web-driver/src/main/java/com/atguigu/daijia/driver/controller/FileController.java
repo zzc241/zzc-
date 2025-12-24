@@ -20,16 +20,25 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/file")
 public class FileController {
+    // @Autowired
+    // private CosService cosService;
     @Autowired
-    private CosService cosService;
-	@Operation(summary = "上传")
-    // @zzcLogin
-    @PostMapping(value="/upload")
-    public Result<String> upload(@RequestPart ("file") MultipartFile file , 
-    @RequestParam (name = "path" , defaultValue = "auth")String path) {
-        CosUploadVo cosUploadVo =  cosService.upload(file, path);
-        String showURL = cosUploadVo.getShowUrl();
-        return Result.ok(showURL);
+    private FileService fileService;
+	// @Operation(summary = "上传")
+    // // @zzcLogin
+    // @PostMapping(value="/upload")
+    // public Result<String> upload(@RequestPart ("file") MultipartFile file , 
+    // @RequestParam (name = "path" , defaultValue = "auth")String path) {
+    //     CosUploadVo cosUploadVo =  cosService.upload(file, path);
+    //     String showURL = cosUploadVo.getShowUrl();
+    //     return Result.ok(showURL);
+    // }
+
+    @Operation(summary = "上传")
+    @PostMapping("/upload")
+    public Result<String> upload(@RequestPart("file") MultipartFile file) {
+        String url = fileService.upload(file);
+        return Result.ok(url);
     }
 
 }

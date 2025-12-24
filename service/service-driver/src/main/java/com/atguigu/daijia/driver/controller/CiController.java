@@ -20,5 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class CiController {
 	
 
+    @Autowired
+    private CiService ciService;
+
+    @Operation(summary = "文本审核")
+    @PostMapping("/textAuditing")
+    public Result<TextAuditingVo> textAuditing(@RequestBody String content) {
+        return Result.ok(ciService.textAuditing(content));
+    }
+
 }
 
