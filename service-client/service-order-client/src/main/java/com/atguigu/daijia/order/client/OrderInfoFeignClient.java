@@ -14,8 +14,11 @@ import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderBillForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
+import com.atguigu.daijia.model.vo.base.PageVo;
 import com.atguigu.daijia.model.vo.driver.DriverLoginVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
+import com.atguigu.daijia.model.vo.order.OrderBillVo;
+import com.atguigu.daijia.model.vo.order.OrderProfitsharingVo;
 
 
 @FeignClient(value = "service-order")
@@ -104,4 +107,56 @@ public interface OrderInfoFeignClient {
      */
     @PostMapping("/order/info/endDrive")
     Result<Boolean> endDrive(@RequestBody UpdateOrderBillForm updateOrderBillForm);
+
+
+    /**
+     * 获取乘客订单分页列表
+     * @param customerId
+     * @param page
+     * @param limit
+     * @return
+     */
+    @GetMapping("/order/info/findCustomerOrderPage/{customerId}/{page}/{limit}")
+    Result<PageVo> findCustomerOrderPage(@PathVariable("customerId") Long customerId,
+                                        @PathVariable("page") Long page,
+                                        @PathVariable("limit") Long limit);
+
+
+    /**
+    * 获取司机订单分页列表
+    * @param driverId
+    * @param page
+    * @param limit
+    * @return
+    */
+    @GetMapping("/order/info/findDriverOrderPage/{driverId}/{page}/{limit}")
+    Result<PageVo> findDriverOrderPage(@PathVariable("driverId") Long driverId,
+            @PathVariable("page") Long page,
+            @PathVariable("limit") Long limit);
+
+
+    /**
+     * 根据订单id获取实际账单信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/order/info/getOrderBillInfo/{orderId}")
+    Result<OrderBillVo> getOrderBillInfo(@PathVariable("orderId") Long orderId);
+
+    /**
+     * 根据订单id获取实际分账信息
+     * @param orderId
+     * @return
+     */
+    @GetMapping("/order/info/getOrderProfitsharing/{orderId}")
+    Result<OrderProfitsharingVo> getOrderProfitsharing(@PathVariable("orderId") Long orderId);
+
+    /**
+     * 司机发送账单信息
+     * @param orderId
+     * @param driverId
+     * @return
+     */
+    @GetMapping("/order/info/sendOrderBillInfo/{orderId}/{driverId}")
+    Result<Boolean> sendOrderBillInfo(@PathVariable("orderId") Long orderId, @PathVariable("driverId") Long driverId);
 }

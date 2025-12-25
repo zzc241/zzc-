@@ -32,7 +32,7 @@ public class FileServiceImpl implements FileService {
             // 创建一个Minio的客户端对象
             MinioClient minioClient = MinioClient.builder()
                     .endpoint(minioProperties.getEndpointUrl())
-                    .credentials(minioProperties.getAccessKey(), minioProperties.getSecreKey())
+                    .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
                     .build();
 
             // 判断桶是否存在
@@ -42,6 +42,27 @@ public class FileServiceImpl implements FileService {
             } else {  // 如果存在打印信息
                 System.out.println("Bucket 'daijia' already exists.");
             }
+
+
+            String originalFilename = file.getOriginalFilename();
+            String encodedFilename;
+            try {
+                // 提取扩展名
+                String extension = "";
+                int dotIndex = originalFilename.lastIndexOf('.');
+                if (dotIndex > 0 && dotIndex < originalFilename.length() - 1) {
+                    extension = originalFilename.substring(dotIndex);
+                    originalFilename = originalFilename.substring(0, dotIndex);
+                }
+                
+                // 对中文文件名进行URL编码（保留扩展名不编码）
+                encodedFilename = java.net.URLEncoder.encode(originalFilename, "UTF-8")
+                        .replace("+", "%20") + extension;
+            } catch (Exception e) {
+                log.warn("文件名编码失败，使用UUID: {}", e.getMessage());
+                encodedFilename = UUID.randomUUID().toString();
+            }
+
 
             // 设置存储对象名称
             String extFileName = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
@@ -58,7 +79,7 @@ public class FileServiceImpl implements FileService {
             return minioProperties.getEndpointUrl() + "/" + minioProperties.getBucketName() + "/" + fileName ;
 
         } catch (Exception e) {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR.getCode(), "文件上传失败：" + e.getMessage());
         }
     }
 

@@ -8,8 +8,12 @@ import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderBillForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
+import com.atguigu.daijia.model.vo.base.PageVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
+import com.atguigu.daijia.model.vo.order.OrderBillVo;
+import com.atguigu.daijia.model.vo.order.OrderProfitsharingVo;
 import com.atguigu.daijia.order.service.OrderInfoService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -98,6 +102,53 @@ public class OrderInfoController {
     @PostMapping("/endDrive")
     public Result<Boolean> endDrive(@RequestBody UpdateOrderBillForm updateOrderBillForm) {
         return Result.ok(orderInfoService.endDrive(updateOrderBillForm));
+    }
+
+    @Operation(summary = "获取乘客订单分页列表")
+    @GetMapping("/findCustomerOrderPage/{customerId}/{page}/{limit}")
+    public Result<PageVo> findCustomerOrderPage(@PathVariable Long customerId,
+                                                @PathVariable Long page,
+                                                @PathVariable Long limit) {
+        //创建page对象
+        Page<OrderInfo> pageParam = new Page<>(page,limit);
+        //调用service方法实现分页条件查询
+        PageVo pageVo = orderInfoService.findCustomerOrderPage(pageParam,customerId);
+        pageVo.setPage(page);
+        pageVo.setLimit(limit);
+        return Result.ok(pageVo);
+    }
+
+    @Operation(summary = "获取司机订单分页列表")
+    @GetMapping("/findDriverOrderPage/{driverId}/{page}/{limit}")
+    public Result<PageVo> findDriverOrderPage(@PathVariable Long driverId,
+                                                @PathVariable Long page,
+                                                @PathVariable Long limit) {
+        //创建page对象
+        Page<OrderInfo> pageParam = new Page<>(page,limit);
+        //调用service方法实现分页条件查询
+        PageVo pageVo = orderInfoService.findDriverOrderPage(pageParam,driverId);
+        pageVo.setPage(page);
+        pageVo.setLimit(limit);
+        return Result.ok(pageVo);
+    }
+
+
+    @Operation(summary = "根据订单id获取实际账单信息")
+    @GetMapping("/getOrderBillInfo/{orderId}")
+    public Result<OrderBillVo> getOrderBillInfo(@PathVariable Long orderId) {
+        return Result.ok(orderInfoService.getOrderBillInfo(orderId));
+    }
+
+    @Operation(summary = "根据订单id获取实际分账信息")
+    @GetMapping("/getOrderProfitsharing/{orderId}")
+    public Result<OrderProfitsharingVo> getOrderProfitsharing(@PathVariable Long orderId) {
+        return Result.ok(orderInfoService.getOrderProfitsharing(orderId));
+    }
+
+    @Operation(summary = "发送账单信息")
+    @GetMapping("/sendOrderBillInfo/{orderId}/{driverId}")
+    Result<Boolean> sendOrderBillInfo(@PathVariable Long orderId, @PathVariable Long driverId) {
+        return Result.ok(orderInfoService.sendOrderBillInfo(orderId, driverId));
     }
 
 }
