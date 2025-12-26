@@ -109,4 +109,14 @@ public class CustomerInfoServiceImpl extends ServiceImpl<CustomerInfoMapper, Cus
 
     }
 
+
+    @Override
+    public String getCustomerOpenId(Long customerId) {
+        LambdaQueryWrapper<CustomerInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CustomerInfo::getId, customerId);
+        
+    CustomerInfo customerInfo = this.getOne(wrapper.select(CustomerInfo::getWxOpenId));
+    return customerInfo.getWxOpenId();
+    }
+
 }

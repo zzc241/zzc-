@@ -11,6 +11,7 @@ import com.atguigu.daijia.model.vo.map.DrivingLineVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
 import com.atguigu.daijia.model.vo.order.NewOrderDataVo;
 import com.atguigu.daijia.model.vo.order.OrderInfoVo;
+import com.atguigu.daijia.model.vo.order.OrderRewardVo;
 
 public interface OrderService {
 
@@ -39,5 +40,8 @@ public interface OrderService {
     PageVo findDriverOrderPage(Long driverId, Long page, Long limit);
 
     Boolean sendOrderBillInfo(Long orderId, Long driverId);
+
+
+
 
 }
