@@ -39,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.wechat.pay.java.service.partnerpayments.jsapi.model.Transaction;
 
+import io.seata.spring.annotation.GlobalTransactional;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
@@ -204,6 +205,7 @@ public class WxPayServiceImpl implements WxPayService {
 
 
     //支付成功后续处理
+    @GlobalTransactional
     @Override
     public void handleOrder(String orderNo) {
         //1 远程调用：更新订单状态：已经支付
