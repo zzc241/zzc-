@@ -3,6 +3,7 @@ package com.atguigu.daijia.customer.service.impl;
 import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.result.ResultCodeEnum;
+import com.atguigu.daijia.coupon.client.CouponFeignClient;
 import com.atguigu.daijia.customer.client.CustomerInfoFeignClient;
 import com.atguigu.daijia.customer.service.OrderService;
 import com.atguigu.daijia.dispatch.client.NewOrderFeignClient;
@@ -13,6 +14,7 @@ import com.atguigu.daijia.map.client.WxPayFeignClient;
 import com.atguigu.daijia.model.entity.order.OrderInfo;
 import com.atguigu.daijia.model.entity.rule.FeeRule;
 import com.atguigu.daijia.model.enums.OrderStatus;
+import com.atguigu.daijia.model.form.coupon.UseCouponForm;
 import com.atguigu.daijia.model.form.customer.ExpectOrderForm;
 import com.atguigu.daijia.model.form.customer.SubmitOrderForm;
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
@@ -39,6 +41,7 @@ import com.atguigu.daijia.rules.client.FeeRuleFeignClient;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import org.springframework.beans.BeanUtils;
@@ -66,6 +69,8 @@ public class OrderServiceImpl implements OrderService {
     private CustomerInfoFeignClient customerInfoFeignClient;
     @Autowired
     private WxPayFeignClient wxPayFeignClient;
+    @Autowired
+    private CouponFeignClient couponFeignClient;
 
     @Override
     public ExpectOrderVo expectOrder( ExpectOrderForm expectOrderForm){
@@ -218,12 +223,38 @@ public class OrderServiceImpl implements OrderService {
         //3.获取司机微信openId
         String driverOpenId = driverInfoFeignClient.getDriverOpenId(orderPayVo.getDriverId()).getData();
 
+        //处理优惠卷
+        BigDecimal couponAmount = null;
+        //判断
+        if (null == orderPayVo.getCouponAmount()
+                && null != createWxPaymentForm.getCustomerCouponId()
+                && createWxPaymentForm.getCustomerCouponId() != 0) {
+            UseCouponForm useCouponForm = new UseCouponForm();
+            useCouponForm.setOrderId(orderPayVo.getOrderId());
+            useCouponForm.setCustomerCouponId(createWxPaymentForm.getCustomerCouponId());
+            useCouponForm.setOrderAmount(orderPayVo.getPayAmount());
+            useCouponForm.setCustomerId(createWxPaymentForm.getCustomerId());
+            couponAmount = couponFeignClient.useCoupon(useCouponForm).getData();
+        }
+        
+        //更新订单支付金额
+        //获取支付金额
+        BigDecimal payAmount = orderPayVo.getPayAmount();
+        if(couponAmount != null) {
+            orderInfoFeignClient.updateCouponAmount(orderPayVo.getOrderId(),couponAmount).getData();
+            
+            //当前支付金额
+            payAmount = payAmount.subtract(couponAmount);
+        }
+
+
+
         //4.封装微信下单对象，微信支付只关注以下订单属性
         PaymentInfoForm paymentInfoForm = new PaymentInfoForm();
         paymentInfoForm.setCustomerOpenId(customerOpenId);
         paymentInfoForm.setDriverOpenId(driverOpenId);
         paymentInfoForm.setOrderNo(orderPayVo.getOrderNo());
-        paymentInfoForm.setAmount(orderPayVo.getPayAmount());
+        paymentInfoForm.setAmount(payAmount);
         paymentInfoForm.setContent(orderPayVo.getContent());
         paymentInfoForm.setPayWay(1);
         WxPrepayVo wxPrepayVo = wxPayFeignClient.createWxPayment(paymentInfoForm).getData();

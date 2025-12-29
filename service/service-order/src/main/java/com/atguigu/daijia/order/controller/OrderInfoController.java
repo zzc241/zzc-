@@ -19,6 +19,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -169,6 +172,12 @@ public class OrderInfoController {
     @GetMapping("/getOrderRewardFee/{orderNo}")
     public Result<OrderRewardVo> getOrderRewardFee(@PathVariable String orderNo) {
         return Result.ok(orderInfoService.getOrderRewardFee(orderNo));
+    }
+
+    @Operation(summary = "更新订单优惠券金额")
+    @GetMapping("/updateCouponAmount/{orderId}/{couponAmount}")
+    public Result<Boolean> updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount) {
+    return Result.ok(orderInfoService.updateCouponAmount(orderId, couponAmount));
     }
 
 }

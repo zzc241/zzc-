@@ -1,5 +1,7 @@
 package com.atguigu.daijia.order.service;
 
+import java.math.BigDecimal;
+
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -57,5 +59,8 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     OrderRewardVo getOrderRewardFee(String orderNo);
 
+    void orderCancel(Long orderId);
+
+    Boolean updateCouponAmount(Long orderId, BigDecimal couponAmount);
 
 }

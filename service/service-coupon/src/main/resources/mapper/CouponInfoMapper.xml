@@ -6,7 +6,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.atguigu.daijia.coupon.mapper.CouponInfoMapper">
 
-	<resultMap id="couponInfoMap" type="com.atguigu.daijia.model.entity.coupon.CouponInfo" autoMapping="true">
+	<resultMap id="couponInfoMap" type="com.atguigu.daijia.model.entity.coupon.CouponInfo">
 	</resultMap>
 	
 	<!-- 用于select查询公用抽取的列 -->
@@ -118,4 +118,3 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 		update coupon_info set use_count = use_count + 1 where id = #{id}
 	</update>
 </mapper>
-

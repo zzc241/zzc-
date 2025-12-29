@@ -1,5 +1,7 @@
 package com.atguigu.daijia.order.client;
 
+import java.math.BigDecimal;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -189,5 +191,14 @@ public interface OrderInfoFeignClient {
      */
     @GetMapping("/order/info//getOrderRewardFee/{orderNo}")
     Result<OrderRewardVo> getOrderRewardFee(@PathVariable("orderNo") String orderNo);
+
+    /**
+     * 更新优惠券金额
+     * @param orderId
+     * @param couponAmount
+     * @return
+     */
+    @GetMapping("/order/info/updateCouponAmount/{orderId}/{couponAmount}")
+    Result<Boolean> updateCouponAmount(@PathVariable Long orderId, @PathVariable BigDecimal couponAmount);
 
 }

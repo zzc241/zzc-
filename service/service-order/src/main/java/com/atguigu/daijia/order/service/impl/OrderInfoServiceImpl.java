@@ -33,10 +33,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.redisson.api.RBlockingQueue;
+import org.redisson.api.RDelayedQueue;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -78,6 +81,8 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
 
         orderInfoMapper.insert(orderInfo);
 
+        this.sendDelayMessage(orderInfo.getId());
+
         this.log(orderInfo.getId(),orderInfo.getStatus());
         log.info("保存订单信息，订单号：{}",orderNo);
 
@@ -93,6 +98,19 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderStatusLog.setOrderStatus(status);
         orderStatusLog.setOperateTime(new Date());
         orderStatusLogMapper.insert(orderStatusLog);
+    }
+    public void sendDelayMessage(Long orderId) {
+        try{
+            RBlockingQueue<Object> blockQueue =  redissonClient.getBlockingQueue("queue_cancel");
+            
+            RDelayedQueue<Object> delayQueue = redissonClient.getDelayedQueue(blockQueue);
+
+            delayQueue.offer(orderId, 15, TimeUnit.MINUTES);
+        }catch( Exception e){
+
+            e.printStackTrace();
+            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        }
     }
 
     @Override
@@ -474,5 +492,32 @@ public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo
         orderRewardVo.setDriverId(orderInfo.getDriverId());
         orderRewardVo.setRewardFee(orderBill.getRewardFee());
         return orderRewardVo;
+    }
+
+    @Override
+    public void orderCancel(Long orderId) { 
+        //orderId查询订单信息
+        OrderInfo orderInfo = orderInfoMapper.selectById(orderId);
+        //判断
+        if(orderInfo.getStatus()==OrderStatus.WAITING_ACCEPT.getStatus()) {
+            //修改订单状态：取消状态
+            orderInfo.setStatus(OrderStatus.CANCEL_ORDER.getStatus());
+            int rows = orderInfoMapper.updateById(orderInfo);
+            if(rows == 1) {
+                //删除接单标识
+
+                redisTemplate.delete(RedisConstant.ORDER_ACCEPT_MARK);
+            }
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean updateCouponAmount(Long orderId, BigDecimal couponAmount) {
+    int row = orderBillMapper.updateCouponAmount(orderId, couponAmount);
+        if(row != 1) {
+        throw new GuiguException(ResultCodeEnum.UPDATE_ERROR);
+    }
+    return true;
     }
 }
