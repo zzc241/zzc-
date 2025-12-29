@@ -6,7 +6,9 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.atguigu.daijia.driver.mapper.DriverInfoMapper">
 
-	<resultMap id="driverInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverInfo" autoMapping="true">
+	<!-- <resultMap id="driverInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverInfo" autoMapping="true">
+	</resultMap> -->
+	<resultMap id="driverInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverInfo">
 	</resultMap>
 	
 	<!-- 用于select查询公用抽取的列 -->
@@ -15,4 +17,3 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 	</sql>
 	
 </mapper>
-

@@ -9,16 +9,15 @@ import org.kie.api.runtime.KieSession;
 import org.kie.internal.io.ResourceFactory;
 
 public class DroolsHelper {
-
     private static final String RULES_CUSTOMER_RULES_DRL = "rules/FeeRule.drl";
 
     public static KieSession loadForRule(String drlStr) {
-        KieServices kieServices = KieServices.Factory.get();
-
+         KieServices kieServices = KieServices.Factory.get();
+        
         KieFileSystem kieFileSystem = kieServices.newKieFileSystem();
-        kieFileSystem.write(
-                ResourceFactory.newClassPathResource(drlStr));
-
+    kieFileSystem.write(
+        ResourceFactory.newClassPathResource(drlStr));
+        
         KieBuilder kb = kieServices.newKieBuilder(kieFileSystem);
         kb.buildAll();
 

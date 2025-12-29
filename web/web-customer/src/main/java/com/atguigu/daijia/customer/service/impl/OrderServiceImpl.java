@@ -12,6 +12,7 @@ import com.atguigu.daijia.map.client.LocationFeignClient;
 import com.atguigu.daijia.map.client.MapFeignClient;
 import com.atguigu.daijia.map.client.WxPayFeignClient;
 import com.atguigu.daijia.model.entity.order.OrderInfo;
+import com.atguigu.daijia.model.entity.rule.FeeRule;
 import com.atguigu.daijia.model.enums.OrderStatus;
 import com.atguigu.daijia.model.form.coupon.UseCouponForm;
 import com.atguigu.daijia.model.form.customer.ExpectOrderForm;
@@ -25,6 +26,7 @@ import com.atguigu.daijia.model.vo.base.PageVo;
 import com.atguigu.daijia.model.vo.customer.ExpectOrderVo;
 import com.atguigu.daijia.model.vo.dispatch.NewOrderTaskVo;
 import com.atguigu.daijia.model.vo.driver.DriverInfoVo;
+import com.atguigu.daijia.model.vo.driver.DriverLicenseOcrVo;
 import com.atguigu.daijia.model.vo.map.DrivingLineVo;
 import com.atguigu.daijia.model.vo.map.OrderLocationVo;
 import com.atguigu.daijia.model.vo.map.OrderServiceLastLocationVo;
@@ -36,117 +38,110 @@ import com.atguigu.daijia.model.vo.payment.WxPrepayVo;
 import com.atguigu.daijia.model.vo.rules.FeeRuleResponseVo;
 import com.atguigu.daijia.order.client.OrderInfoFeignClient;
 import com.atguigu.daijia.rules.client.FeeRuleFeignClient;
+
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Slf4j
 @Service
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class OrderServiceImpl implements OrderService {
-
     @Autowired
     private MapFeignClient mapFeignClient;
-
     @Autowired
     private FeeRuleFeignClient feeRuleFeignClient;
-
     @Autowired
     private OrderInfoFeignClient orderInfoFeignClient;
-
     @Autowired
     private NewOrderFeignClient newOrderFeignClient;
-
     @Autowired
     private DriverInfoFeignClient driverInfoFeignClient;
-
     @Autowired
     private LocationFeignClient locationFeignClient;
-
     @Autowired
     private CustomerInfoFeignClient customerInfoFeignClient;
+    @Autowired
+    private WxPayFeignClient wxPayFeignClient;
+    @Autowired
+    private CouponFeignClient couponFeignClient;
 
-    //预估订单数据
     @Override
-    public ExpectOrderVo expectOrder(ExpectOrderForm expectOrderForm) {
-        //获取驾驶线路
+    public ExpectOrderVo expectOrder( ExpectOrderForm expectOrderForm){
+        log.info("计算订单：{}", expectOrderForm);
+        ExpectOrderVo expectOrderVo = new ExpectOrderVo();
+
         CalculateDrivingLineForm calculateDrivingLineForm = new CalculateDrivingLineForm();
-        BeanUtils.copyProperties(expectOrderForm,calculateDrivingLineForm);
+        BeanUtils.copyProperties(expectOrderForm, calculateDrivingLineForm);
         Result<DrivingLineVo> drivingLineVoResult = mapFeignClient.calculateDrivingLine(calculateDrivingLineForm);
+        log.info(drivingLineVoResult.toString());
         DrivingLineVo drivingLineVo = drivingLineVoResult.getData();
 
-        //获取订单费用
         FeeRuleRequestForm calculateOrderFeeForm = new FeeRuleRequestForm();
         calculateOrderFeeForm.setDistance(drivingLineVo.getDistance());
         calculateOrderFeeForm.setStartTime(new Date());
         calculateOrderFeeForm.setWaitMinute(0);
+
         Result<FeeRuleResponseVo> feeRuleResponseVoResult = feeRuleFeignClient.calculateOrderFee(calculateOrderFeeForm);
         FeeRuleResponseVo feeRuleResponseVo = feeRuleResponseVoResult.getData();
 
-        //封装ExpectOrderVo
-        ExpectOrderVo expectOrderVo = new ExpectOrderVo();
         expectOrderVo.setDrivingLineVo(drivingLineVo);
         expectOrderVo.setFeeRuleResponseVo(feeRuleResponseVo);
         return expectOrderVo;
     }
 
-    // //乘客下单
     @Override
     public Long submitOrder(SubmitOrderForm submitOrderForm) {
-        //1 重新计算驾驶线路
+        log.info("提交订单：{}", submitOrderForm);
         CalculateDrivingLineForm calculateDrivingLineForm = new CalculateDrivingLineForm();
-        BeanUtils.copyProperties(submitOrderForm,calculateDrivingLineForm);
-        Result<DrivingLineVo> drivingLineVoResult = mapFeignClient.calculateDrivingLine(calculateDrivingLineForm);
-        DrivingLineVo drivingLineVo = drivingLineVoResult.getData();
+        BeanUtils.copyProperties(submitOrderForm, calculateDrivingLineForm);
+        DrivingLineVo drivingLineVo = mapFeignClient.calculateDrivingLine(calculateDrivingLineForm).getData();
 
-        //2 重新订单费用
         FeeRuleRequestForm calculateOrderFeeForm = new FeeRuleRequestForm();
         calculateOrderFeeForm.setDistance(drivingLineVo.getDistance());
         calculateOrderFeeForm.setStartTime(new Date());
         calculateOrderFeeForm.setWaitMinute(0);
-        Result<FeeRuleResponseVo> feeRuleResponseVoResult = feeRuleFeignClient.calculateOrderFee(calculateOrderFeeForm);
-        FeeRuleResponseVo feeRuleResponseVo = feeRuleResponseVoResult.getData();
+        FeeRuleResponseVo feeRuleResponseVo = feeRuleFeignClient.calculateOrderFee(calculateOrderFeeForm).getData();
 
-        //封装数据
         OrderInfoForm orderInfoForm = new OrderInfoForm();
-        BeanUtils.copyProperties(submitOrderForm,orderInfoForm);
+        BeanUtils.copyProperties(submitOrderForm, orderInfoForm);
+
         orderInfoForm.setExpectDistance(drivingLineVo.getDistance());
         orderInfoForm.setExpectAmount(feeRuleResponseVo.getTotalAmount());
-        Result<Long> orderInfoResult = orderInfoFeignClient.saveOrderInfo(orderInfoForm);
-        Long orderId = orderInfoResult.getData();
 
-        //任务调度：查询附近可以接单司机
-        NewOrderTaskVo newOrderDispatchVo = new NewOrderTaskVo();
-        newOrderDispatchVo.setOrderId(orderId);
-        newOrderDispatchVo.setStartLocation(orderInfoForm.getStartLocation());
-        newOrderDispatchVo.setStartPointLongitude(orderInfoForm.getStartPointLongitude());
-        newOrderDispatchVo.setStartPointLatitude(orderInfoForm.getStartPointLatitude());
-        newOrderDispatchVo.setEndLocation(orderInfoForm.getEndLocation());
-        newOrderDispatchVo.setEndPointLongitude(orderInfoForm.getEndPointLongitude());
-        newOrderDispatchVo.setEndPointLatitude(orderInfoForm.getEndPointLatitude());
-        newOrderDispatchVo.setExpectAmount(orderInfoForm.getExpectAmount());
-        newOrderDispatchVo.setExpectDistance(orderInfoForm.getExpectDistance());
-        newOrderDispatchVo.setExpectTime(drivingLineVo.getDuration());
-        newOrderDispatchVo.setFavourFee(orderInfoForm.getFavourFee());
-        newOrderDispatchVo.setCreateTime(new Date());
-        //远程调用
-        Long jobId = newOrderFeignClient.addAndStartTask(newOrderDispatchVo).getData();
-        //返回订单id
+        Long orderId = orderInfoFeignClient.saveOrderInfo(orderInfoForm).getData();
+
+        //任务调度： 查询附近可以接单司机
+        NewOrderTaskVo newOrderTaskVo = new NewOrderTaskVo();
+        newOrderTaskVo.setOrderId(orderId);
+        newOrderTaskVo.setStartLocation(orderInfoForm.getStartLocation());
+        newOrderTaskVo.setStartPointLongitude(orderInfoForm.getStartPointLongitude());
+        newOrderTaskVo.setStartPointLatitude(orderInfoForm.getStartPointLatitude());
+        newOrderTaskVo.setEndLocation(orderInfoForm.getEndLocation());
+        newOrderTaskVo.setEndPointLongitude(orderInfoForm.getEndPointLongitude());
+        newOrderTaskVo.setEndPointLatitude(orderInfoForm.getEndPointLatitude());
+        newOrderTaskVo.setExpectAmount(orderInfoForm.getExpectAmount());
+        newOrderTaskVo.setExpectDistance(orderInfoForm.getExpectDistance());
+        newOrderTaskVo.setExpectTime(drivingLineVo.getDuration());
+        newOrderTaskVo.setFavourFee(orderInfoForm.getFavourFee());
+        newOrderTaskVo.setCreateTime(new Date());
+        // BeanUtils.copyProperties(submitOrderForm, newOrderTaskVo);
+        Long jobId = newOrderFeignClient.addAndStartTask(newOrderTaskVo).getData();
+        log.info("订单id为： {}，绑定任务id为：{}", orderId, jobId);
         return orderId;
     }
 
-    //查询订单状态
     @Override
     public Integer getOrderStatus(Long orderId) {
-        Result<Integer> integerResult = orderInfoFeignClient.getOrderStatus(orderId);
-        return integerResult.getData();
+        return orderInfoFeignClient.getOrderStatus(orderId).getData();
     }
 
-    //乘客查找当前订单
     @Override
     public CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId) {
         return orderInfoFeignClient.searchCustomerCurrentOrder(customerId).getData();
@@ -154,41 +149,42 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderInfoVo getOrderInfo(Long orderId, Long customerId) {
+        //订单信息
         OrderInfo orderInfo = orderInfoFeignClient.getOrderInfo(orderId).getData();
-        //判断
-        if(orderInfo.getCustomerId() != customerId) {
+        if (orderInfo.getCustomerId().longValue() != customerId.longValue()) {
             throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
         }
 
-        //获取司机信息
         DriverInfoVo driverInfoVo = null;
         Long driverId = orderInfo.getDriverId();
         if(driverId != null) {
             driverInfoVo = driverInfoFeignClient.getDriverInfo(driverId).getData();
         }
-
+        
         //获取账单信息
         OrderBillVo orderBillVo = null;
         if(orderInfo.getStatus() >= OrderStatus.UNPAID.getStatus()) {
             orderBillVo = orderInfoFeignClient.getOrderBillInfo(orderId).getData();
         }
 
+        //封装订单信息
         OrderInfoVo orderInfoVo = new OrderInfoVo();
         orderInfoVo.setOrderId(orderId);
-        BeanUtils.copyProperties(orderInfo,orderInfoVo);
-        orderInfoVo.setOrderBillVo(orderBillVo);
+        BeanUtils.copyProperties(orderInfo, orderInfoVo);
         orderInfoVo.setDriverInfoVo(driverInfoVo);
+        orderInfoVo.setOrderBillVo(orderBillVo);
         return orderInfoVo;
     }
 
     @Override
     public DriverInfoVo getDriverInfo(Long orderId, Long customerId) {
-        //根据订单id获取订单信息
         OrderInfo orderInfo = orderInfoFeignClient.getOrderInfo(orderId).getData();
-        if(orderInfo.getCustomerId() != customerId) {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
-        }
+        log.info("订单customer信息：{}", orderInfo.getCustomerId());
 
+        log.info("customer信息：{}", customerId);
+        if (orderInfo.getCustomerId()!= (customerId)) {
+            throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
+        }
         return driverInfoFeignClient.getDriverInfo(orderInfo.getDriverId()).getData();
     }
 
@@ -209,28 +205,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageVo findCustomerOrderPage(Long customerId, Long page, Long limit) {
-        return orderInfoFeignClient.findCustomerOrderPage(customerId,page,limit).getData();
+        return orderInfoFeignClient.findCustomerOrderPage(customerId, page, limit).getData();
     }
-
-    @Autowired
-    private WxPayFeignClient wxPayFeignClient;
-
-    @Autowired
-    private CouponFeignClient couponFeignClient;
 
     @Override
     public WxPrepayVo createWxPayment(CreateWxPaymentForm createWxPaymentForm) {
-        //获取订单支付信息
-        OrderPayVo orderPayVo = orderInfoFeignClient.getOrderPayVo(createWxPaymentForm.getOrderNo(),
-                createWxPaymentForm.getCustomerId()).getData();
-        //判断
-        if(orderPayVo.getStatus() != OrderStatus.UNPAID.getStatus()) {
+        //1.获取订单支付相关信息
+        OrderPayVo orderPayVo = orderInfoFeignClient.getOrderPayVo(createWxPaymentForm.getOrderNo(), createWxPaymentForm.getCustomerId()).getData();
+        //判断是否在未支付状态
+        if (orderPayVo.getStatus().intValue() != OrderStatus.UNPAID.getStatus().intValue()) {
             throw new GuiguException(ResultCodeEnum.ILLEGAL_REQUEST);
         }
 
-        //获取乘客和司机openid
+        //2.获取乘客微信openId
         String customerOpenId = customerInfoFeignClient.getCustomerOpenId(orderPayVo.getCustomerId()).getData();
 
+        //3.获取司机微信openId
         String driverOpenId = driverInfoFeignClient.getDriverOpenId(orderPayVo.getDriverId()).getData();
 
         //处理优惠卷
@@ -246,28 +236,27 @@ public class OrderServiceImpl implements OrderService {
             useCouponForm.setCustomerId(createWxPaymentForm.getCustomerId());
             couponAmount = couponFeignClient.useCoupon(useCouponForm).getData();
         }
-
+        
         //更新订单支付金额
         //获取支付金额
         BigDecimal payAmount = orderPayVo.getPayAmount();
         if(couponAmount != null) {
             orderInfoFeignClient.updateCouponAmount(orderPayVo.getOrderId(),couponAmount).getData();
-
+            
             //当前支付金额
             payAmount = payAmount.subtract(couponAmount);
         }
 
-        //封装需要数据到实体类，远程调用发起微信支付
+
+
+        //4.封装微信下单对象，微信支付只关注以下订单属性
         PaymentInfoForm paymentInfoForm = new PaymentInfoForm();
         paymentInfoForm.setCustomerOpenId(customerOpenId);
         paymentInfoForm.setDriverOpenId(driverOpenId);
         paymentInfoForm.setOrderNo(orderPayVo.getOrderNo());
-
         paymentInfoForm.setAmount(payAmount);
-
         paymentInfoForm.setContent(orderPayVo.getContent());
         paymentInfoForm.setPayWay(1);
-
         WxPrepayVo wxPrepayVo = wxPayFeignClient.createWxPayment(paymentInfoForm).getData();
         return wxPrepayVo;
     }
@@ -276,4 +265,5 @@ public class OrderServiceImpl implements OrderService {
     public Boolean queryPayStatus(String orderNo) {
         return wxPayFeignClient.queryPayStatus(orderNo).getData();
     }
+
 }

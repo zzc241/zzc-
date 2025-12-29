@@ -1,14 +1,15 @@
 package com.atguigu.daijia.dispatch.xxl.config;
 
-import lombok.Data;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Data
+import lombok.Data;
+
 @Component
+@Data
 @ConfigurationProperties(prefix = "xxl.job.client")
 public class XxlJobClientConfig {
-
     private Integer jobGroupId;
     private String addUrl;
     private String removeUrl;

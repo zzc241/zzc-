@@ -1,5 +1,7 @@
 package com.atguigu.daijia.driver.service;
 
+import java.util.List;
+
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
 import com.atguigu.daijia.model.form.order.OrderFeeForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
@@ -9,8 +11,7 @@ import com.atguigu.daijia.model.vo.map.DrivingLineVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
 import com.atguigu.daijia.model.vo.order.NewOrderDataVo;
 import com.atguigu.daijia.model.vo.order.OrderInfoVo;
-
-import java.util.List;
+import com.atguigu.daijia.model.vo.order.OrderRewardVo;
 
 public interface OrderService {
 
@@ -20,16 +21,18 @@ public interface OrderService {
 
     Boolean robNewOrder(Long driverId, Long orderId);
 
+    CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
+
     CurrentOrderInfoVo searchDriverCurrentOrder(Long driverId);
 
-    OrderInfoVo getOrderInfo(Long orderId, Long driverId);
-
+    OrderInfoVo getOrderInfo(Long orderId, Long customerId);
+    
     DrivingLineVo calculateDrivingLine(CalculateDrivingLineForm calculateDrivingLineForm);
 
     Boolean driverArriveStartLocation(Long orderId, Long driverId);
 
     Boolean updateOrderCart(UpdateOrderCartForm updateOrderCartForm);
-
+    
     Boolean startDrive(StartDriveForm startDriveForm);
 
     Boolean endDrive(OrderFeeForm orderFeeForm);
@@ -37,4 +40,8 @@ public interface OrderService {
     PageVo findDriverOrderPage(Long driverId, Long page, Long limit);
 
     Boolean sendOrderBillInfo(Long orderId, Long driverId);
+
+
+
+
 }

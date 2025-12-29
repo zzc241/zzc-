@@ -9,14 +9,22 @@ import com.atguigu.daijia.model.form.map.UpdateOrderLocationForm;
 import com.atguigu.daijia.model.vo.map.NearByDriverVo;
 import com.atguigu.daijia.model.vo.map.OrderLocationVo;
 import com.atguigu.daijia.model.vo.map.OrderServiceLastLocationVo;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @Tag(name = "位置API接口管理")
@@ -46,8 +54,8 @@ public class LocationController {
 
     @Operation(summary = "搜索附近满足条件的司机")
     @PostMapping("/searchNearByDriver")
-    public Result<List<NearByDriverVo>> searchNearByDriver(@RequestBody
-                                                               SearchNearByDriverForm searchNearByDriverForm) {
+    public Result<List<NearByDriverVo>> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm) {
+        log.info("搜索附近满足条件的司机：{}", searchNearByDriverForm);
         return Result.ok(locationService.searchNearByDriver(searchNearByDriverForm));
     }
 
@@ -60,14 +68,16 @@ public class LocationController {
     @Operation(summary = "司机赶往代驾起始点：获取订单经纬度位置")
     @GetMapping("/getCacheOrderLocation/{orderId}")
     public Result<OrderLocationVo> getCacheOrderLocation(@PathVariable Long orderId) {
-        return Result.ok(locationService.getCacheOrderLocation(orderId));
+    return Result.ok(locationService.getCacheOrderLocation(orderId));
     }
 
-    //批量保存代驾服务订单位置
+
+    @Operation(summary = "开始代驾服务：保存代驾服务订单位置")
     @PostMapping("/saveOrderServiceLocation")
     public Result<Boolean> saveOrderServiceLocation(@RequestBody List<OrderServiceLocationForm> orderLocationServiceFormList) {
         return Result.ok(locationService.saveOrderServiceLocation(orderLocationServiceFormList));
     }
+
 
     @Operation(summary = "代驾服务：获取订单服务最后一个位置信息")
     @GetMapping("/getOrderServiceLastLocation/{orderId}")
@@ -80,5 +90,6 @@ public class LocationController {
     public Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId) {
         return Result.ok(locationService.calculateOrderRealDistance(orderId));
     }
+
 }
 

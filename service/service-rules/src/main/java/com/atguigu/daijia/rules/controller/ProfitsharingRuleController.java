@@ -4,6 +4,7 @@ import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.rules.ProfitsharingRuleRequestForm;
 import com.atguigu.daijia.model.vo.rules.ProfitsharingRuleResponseVo;
 import com.atguigu.daijia.rules.service.ProfitsharingRuleService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,5 +27,6 @@ public class ProfitsharingRuleController {
     public Result<ProfitsharingRuleResponseVo> calculateOrderProfitsharingFee(@RequestBody ProfitsharingRuleRequestForm profitsharingRuleRequestForm) {
         return Result.ok(profitsharingRuleService.calculateOrderProfitsharingFee(profitsharingRuleRequestForm));
     }
+
 }
 

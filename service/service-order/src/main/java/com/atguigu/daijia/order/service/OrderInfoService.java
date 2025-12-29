@@ -1,29 +1,33 @@
 package com.atguigu.daijia.order.service;
 
+import java.math.BigDecimal;
+
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.entity.order.OrderInfo;
 import com.atguigu.daijia.model.form.order.OrderInfoForm;
 import com.atguigu.daijia.model.form.order.StartDriveForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderBillForm;
 import com.atguigu.daijia.model.form.order.UpdateOrderCartForm;
 import com.atguigu.daijia.model.vo.base.PageVo;
-import com.atguigu.daijia.model.vo.order.*;
+import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
+import com.atguigu.daijia.model.vo.order.OrderBillVo;
+import com.atguigu.daijia.model.vo.order.OrderPayVo;
+import com.atguigu.daijia.model.vo.order.OrderProfitsharingVo;
+import com.atguigu.daijia.model.vo.order.OrderRewardVo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.math.BigDecimal;
-
 public interface OrderInfoService extends IService<OrderInfo> {
 
-    //乘客下单
-    Long saveOrderInfo(OrderInfoForm orderInfoForm);
+    public Long saveOrderInfo(OrderInfoForm orderInfoForm);
 
-    //根据订单id获取订单状态
-    Integer getOrderStatus(Long orderId);
+    public Integer getOrderStatus(Long orderId);
 
-    //司机抢单
     Boolean robNewOrder(Long driverId, Long orderId);
 
-    //乘客端查找当前订单
     CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
 
     CurrentOrderInfoVo searchDriverCurrentOrder(Long driverId);
@@ -32,13 +36,13 @@ public interface OrderInfoService extends IService<OrderInfo> {
 
     Boolean updateOrderCart(UpdateOrderCartForm updateOrderCartForm);
 
-    Boolean startDriver(StartDriveForm startDriveForm);
+    Boolean startDrive(StartDriveForm startDriveForm);
+    
 
     Long getOrderNumByTime(String startTime, String endTime);
 
     Boolean endDrive(UpdateOrderBillForm updateOrderBillForm);
 
-    //获取乘客订单分页列表
     PageVo findCustomerOrderPage(Page<OrderInfo> pageParam, Long customerId);
 
     PageVo findDriverOrderPage(Page<OrderInfo> pageParam, Long driverId);
@@ -50,13 +54,13 @@ public interface OrderInfoService extends IService<OrderInfo> {
     Boolean sendOrderBillInfo(Long orderId, Long driverId);
 
     OrderPayVo getOrderPayVo(String orderNo, Long customerId);
-
+    
     Boolean updateOrderPayStatus(String orderNo);
 
     OrderRewardVo getOrderRewardFee(String orderNo);
 
-    ////调用方法取消订单
-    void orderCancel(long parseLong);
+    void orderCancel(Long orderId);
 
     Boolean updateCouponAmount(Long orderId, BigDecimal couponAmount);
+
 }

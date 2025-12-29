@@ -1,13 +1,17 @@
 package com.atguigu.daijia.driver.service;
 
-import com.atguigu.daijia.model.vo.driver.CosUploadVo;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.atguigu.daijia.common.result.Result;
+import com.atguigu.daijia.model.vo.driver.CosUploadVo;
 
 public interface CosService {
 
-    CosUploadVo upload(MultipartFile file, String path);
+    public CosUploadVo upload(MultipartFile file, String path);
 
-    //获取临时签名URL
-    String getImageUrl(String path);
+    String getImageURL(String path);
+
 
 }

@@ -1,6 +1,5 @@
 package com.atguigu.daijia.driver.service.impl;
 
-import com.alibaba.nacos.common.codec.Base64;
 import com.atguigu.daijia.common.execption.GuiguException;
 import com.atguigu.daijia.common.result.ResultCodeEnum;
 import com.atguigu.daijia.driver.config.TencentCloudProperties;
@@ -9,6 +8,7 @@ import com.atguigu.daijia.driver.service.OcrService;
 import com.atguigu.daijia.model.vo.driver.CosUploadVo;
 import com.atguigu.daijia.model.vo.driver.DriverLicenseOcrVo;
 import com.atguigu.daijia.model.vo.driver.IdCardOcrVo;
+import com.fasterxml.jackson.databind.JsonSerializable.Base;
 import com.tencentcloudapi.common.AbstractModel;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
@@ -19,10 +19,18 @@ import com.tencentcloudapi.ocr.v20181119.models.DriverLicenseOCRRequest;
 import com.tencentcloudapi.ocr.v20181119.models.DriverLicenseOCRResponse;
 import com.tencentcloudapi.ocr.v20181119.models.IDCardOCRRequest;
 import com.tencentcloudapi.ocr.v20181119.models.IDCardOCRResponse;
+import com.tencentcloudapi.ocr.v20181119.models.VehicleLicenseOCRRequest;
+import com.tencentcloudapi.ocr.v20181119.models.VehicleLicenseOCRResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+
+import org.apache.commons.codec.binary.Base64;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,23 +38,18 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class OcrServiceImpl implements OcrService {
-
     @Autowired
     private TencentCloudProperties tencentCloudProperties;
 
     @Autowired
     private CosService cosService;
-    //身份证识别
     @Override
     public IdCardOcrVo idCardOcr(MultipartFile file) {
+        log.info("开始调用腾讯云身份证接口");
         try{
-            //图片转换base64格式字符串
-            byte[] base64 = Base64.encodeBase64(file.getBytes());
-            String fileBase64 = new String(base64);
-
-            // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-            Credential cred = new Credential(tencentCloudProperties.getSecretId(),
-                                             tencentCloudProperties.getSecretKey());
+            Credential cred = new Credential(tencentCloudProperties.getSecretId(), tencentCloudProperties.getSecretKey());
+            // 使用临时密钥示例
+            // Credential cred = new Credential("SecretId", "SecretKey", "Token");
             // 实例化一个http选项，可选的，没有特殊需求可以跳过
             HttpProfile httpProfile = new HttpProfile();
             httpProfile.setEndpoint("ocr.tencentcloudapi.com");
@@ -54,15 +57,15 @@ public class OcrServiceImpl implements OcrService {
             ClientProfile clientProfile = new ClientProfile();
             clientProfile.setHttpProfile(httpProfile);
             // 实例化要请求产品的client对象,clientProfile是可选的
-            OcrClient client = new OcrClient(cred,tencentCloudProperties.getRegion(), clientProfile);
+            OcrClient client = new OcrClient(cred, tencentCloudProperties.getRegion(), clientProfile);
             // 实例化一个请求对象,每个接口都会对应一个request对象
             IDCardOCRRequest req = new IDCardOCRRequest();
-            //设置文件
-            req.setImageBase64(fileBase64);
-
+            byte[] base64;
+            base64 = Base64.encodeBase64(file.getBytes());
+            String file64 = new String(base64);
+            req.setImageBase64(file64);
             // 返回的resp是一个IDCardOCRResponse的实例，与请求对象对应
             IDCardOCRResponse resp = client.IDCardOCR(req);
-
             //转换为IdCardOcrVo对象
             IdCardOcrVo idCardOcrVo = new IdCardOcrVo();
             if (StringUtils.hasText(resp.getName())) {
@@ -88,40 +91,36 @@ public class OcrServiceImpl implements OcrService {
                 idCardOcrVo.setIdcardBackShowUrl(cosUploadVo.getShowUrl());
             }
             return idCardOcrVo;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        } catch (TencentCloudSDKException e) {
+            System.out.println(e.toString());
+        }catch (IOException e) {
+                e.printStackTrace();
         }
+        log.info("身份证识别失败");
+        return null;
     }
 
-    ////驾驶证识别
     @Override
-    public DriverLicenseOcrVo driverLicenseOcr(MultipartFile file) {
+    public DriverLicenseOcrVo driverLicenseOcr(MultipartFile file){
+        log.info("开始调用腾讯云驾驶证接口");
         try{
-            //图片转换base64格式字符串
-            byte[] base64 = Base64.encodeBase64(file.getBytes());
-            String fileBase64 = new String(base64);
-
-            // 实例化一个认证对象，入参需要传入腾讯云账户 SecretId 和 SecretKey，此处还需注意密钥对的保密
-            Credential cred = new Credential(tencentCloudProperties.getSecretId(),
-                    tencentCloudProperties.getSecretKey());
-            // 实例化一个http选项，可选的，没有特殊需求可以跳过
+            Credential cred = new Credential(tencentCloudProperties.getSecretId(), tencentCloudProperties.getSecretKey());
             HttpProfile httpProfile = new HttpProfile();
             httpProfile.setEndpoint("ocr.tencentcloudapi.com");
             // 实例化一个client选项，可选的，没有特殊需求可以跳过
             ClientProfile clientProfile = new ClientProfile();
             clientProfile.setHttpProfile(httpProfile);
             // 实例化要请求产品的client对象,clientProfile是可选的
-            OcrClient client = new OcrClient(cred, tencentCloudProperties.getRegion(),
-                                                clientProfile);
+            OcrClient client = new OcrClient(cred, tencentCloudProperties.getRegion(), clientProfile);
             // 实例化一个请求对象,每个接口都会对应一个request对象
             DriverLicenseOCRRequest req = new DriverLicenseOCRRequest();
-            req.setImageBase64(fileBase64);
-
-            // 返回的resp是一个DriverLicenseOCRResponse的实例，与请求对象对应
+            
+            byte[] base64;
+            base64 = Base64.encodeBase64(file.getBytes());
+            String file64 = new String(base64);
+            req.setImageBase64(file64);
+            // 返回的resp是一个VehicleLicenseOCRResponse的实例，与请求对象对应
             DriverLicenseOCRResponse resp = client.DriverLicenseOCR(req);
-
-            //封装到vo对象里面
             DriverLicenseOcrVo driverLicenseOcrVo = new DriverLicenseOcrVo();
             if (StringUtils.hasText(resp.getName())) {
                 //驾驶证正面
@@ -145,9 +144,15 @@ public class OcrServiceImpl implements OcrService {
             }
 
             return driverLicenseOcrVo;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
+        } catch (TencentCloudSDKException e) {
+            System.out.println(e.toString());
+        }catch (IOException e) {
+                e.printStackTrace();
         }
+        log.info("驾驶证识别失败");
+        return null;
+        
     }
+
+
 }

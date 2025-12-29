@@ -8,12 +8,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 全局自定义线程池配置
+ */
 @Configuration
 public class ThreadPoolConfig {
 
     @Bean
-    public ThreadPoolExecutor threadPoolExecutor() {
-
+    public ThreadPoolExecutor threadPoolExecutor(){
         //动态获取服务器核数
         int processors = Runtime.getRuntime().availableProcessors();
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -25,7 +27,7 @@ public class ThreadPoolConfig {
                 Executors.defaultThreadFactory(),
                 new ThreadPoolExecutor.AbortPolicy()
         );
+        //  返回线程池对象
         return threadPoolExecutor;
-
     }
 }

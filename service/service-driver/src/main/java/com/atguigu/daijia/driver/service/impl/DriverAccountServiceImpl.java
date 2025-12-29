@@ -9,6 +9,7 @@ import com.atguigu.daijia.model.form.driver.TransferForm;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,9 @@ import org.springframework.stereotype.Service;
 public class DriverAccountServiceImpl extends ServiceImpl<DriverAccountMapper, DriverAccount> implements DriverAccountService {
 
     @Autowired
-    private DriverAccountMapper driverAccountMapper;
-
-    @Autowired
     private DriverAccountDetailMapper driverAccountDetailMapper;
-
+    @Autowired
+    private DriverAccountMapper driverAccountMapper;
     @Override
     public Boolean transfer(TransferForm transferForm) {
         //1 去重
@@ -37,11 +36,14 @@ public class DriverAccountServiceImpl extends ServiceImpl<DriverAccountMapper, D
         //2 添加奖励到司机账户表
         driverAccountMapper.add(transferForm.getDriverId(),transferForm.getAmount());
 
-        //3 添加交易记录
+        //3 添加交易记录 
         DriverAccountDetail driverAccountDetail = new DriverAccountDetail();
         BeanUtils.copyProperties(transferForm,driverAccountDetail);
         driverAccountDetailMapper.insert(driverAccountDetail);
 
         return true;
     }
+
+
+
 }

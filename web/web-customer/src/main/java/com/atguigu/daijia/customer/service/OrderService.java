@@ -1,5 +1,8 @@
 package com.atguigu.daijia.customer.service;
 
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.customer.ExpectOrderForm;
 import com.atguigu.daijia.model.form.customer.SubmitOrderForm;
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
@@ -16,16 +19,12 @@ import com.atguigu.daijia.model.vo.payment.WxPrepayVo;
 
 public interface OrderService {
 
-    //预估订单数据
-    ExpectOrderVo expectOrder(ExpectOrderForm expectOrderForm);
+    public ExpectOrderVo expectOrder(ExpectOrderForm expectOrderForm);
 
-    //乘客下单
     Long submitOrder(SubmitOrderForm submitOrderForm);
 
-    //查询订单状态
     Integer getOrderStatus(Long orderId);
 
-    //乘客查找当前订单
     CurrentOrderInfoVo searchCustomerCurrentOrder(Long customerId);
 
     OrderInfoVo getOrderInfo(Long orderId, Long customerId);
@@ -35,7 +34,7 @@ public interface OrderService {
     OrderLocationVo getCacheOrderLocation(Long orderId);
 
     DrivingLineVo calculateDrivingLine(CalculateDrivingLineForm calculateDrivingLineForm);
-
+    
     OrderServiceLastLocationVo getOrderServiceLastLocation(Long orderId);
 
     PageVo findCustomerOrderPage(Long customerId, Long page, Long limit);
@@ -43,4 +42,5 @@ public interface OrderService {
     WxPrepayVo createWxPayment(CreateWxPaymentForm createWxPaymentForm);
 
     Boolean queryPayStatus(String orderNo);
+
 }

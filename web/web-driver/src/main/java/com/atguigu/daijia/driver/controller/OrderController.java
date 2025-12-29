@@ -1,6 +1,6 @@
 package com.atguigu.daijia.driver.controller;
 
-import com.atguigu.daijia.common.login.GuiguLogin;
+import com.atguigu.daijia.common.login.zzcLogin;
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.common.util.AuthContextHolder;
 import com.atguigu.daijia.driver.service.OrderService;
@@ -13,34 +13,50 @@ import com.atguigu.daijia.model.vo.map.DrivingLineVo;
 import com.atguigu.daijia.model.vo.order.CurrentOrderInfoVo;
 import com.atguigu.daijia.model.vo.order.NewOrderDataVo;
 import com.atguigu.daijia.model.vo.order.OrderInfoVo;
+import com.atguigu.daijia.model.vo.order.OrderRewardVo;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @Tag(name = "订单API接口管理")
 @RestController
 @RequestMapping("/order")
-@SuppressWarnings({"unchecked", "rawtypes"})
+// @SuppressWarnings({"unchecked", "rawtypes"})
 public class OrderController {
-
     @Autowired
     private OrderService orderService;
 
     @Operation(summary = "查询订单状态")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/getOrderStatus/{orderId}")
     public Result<Integer> getOrderStatus(@PathVariable Long orderId) {
-        return Result.ok(orderService.getOrderStatus(orderId));
+    return Result.ok(orderService.getOrderStatus(orderId));
     }
 
+    // @Operation(summary = "查找司机端当前订单")
+    // @zzcLogin
+    // @GetMapping("/searchDriverCurrentOrder")
+    // public Result<CurrentOrderInfoVo> searchDriverCurrentOrder() {
+    //     CurrentOrderInfoVo currentOrderInfoVo = new CurrentOrderInfoVo();
+    //     currentOrderInfoVo.setIsHasCurrentOrder(false);
+    //     return Result.ok(currentOrderInfoVo);
+    // }
+
     @Operation(summary = "查询司机新订单数据")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/findNewOrderQueueData")
     public Result<List<NewOrderDataVo>> findNewOrderQueueData() {
         Long driverId = AuthContextHolder.getUserId();
@@ -48,15 +64,23 @@ public class OrderController {
     }
 
     @Operation(summary = "司机抢单")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/robNewOrder/{orderId}")
     public Result<Boolean> robNewOrder(@PathVariable Long orderId) {
-        Long driverId = AuthContextHolder.getUserId();
+    Long driverId = AuthContextHolder.getUserId();
         return Result.ok(orderService.robNewOrder(driverId, orderId));
     }
 
+    @Operation(summary = "乘客端查找当前订单")
+    @zzcLogin
+    @GetMapping("/searchCustomerCurrentOrder")
+    public Result<CurrentOrderInfoVo> searchCustomerCurrentOrder() {
+        Long customerId = AuthContextHolder.getUserId();
+        return Result.ok(orderService.searchCustomerCurrentOrder(customerId));
+    }
+
     @Operation(summary = "司机端查找当前订单")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/searchDriverCurrentOrder")
     public Result<CurrentOrderInfoVo> searchDriverCurrentOrder() {
         Long driverId = AuthContextHolder.getUserId();
@@ -64,22 +88,21 @@ public class OrderController {
     }
 
     @Operation(summary = "获取订单账单详细信息")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/getOrderInfo/{orderId}")
     public Result<OrderInfoVo> getOrderInfo(@PathVariable Long orderId) {
         Long driverId = AuthContextHolder.getUserId();
         return Result.ok(orderService.getOrderInfo(orderId, driverId));
     }
-
     @Operation(summary = "计算最佳驾驶线路")
-    @GuiguLogin
+    @zzcLogin
     @PostMapping("/calculateDrivingLine")
     public Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
         return Result.ok(orderService.calculateDrivingLine(calculateDrivingLineForm));
     }
 
     @Operation(summary = "司机到达代驾起始地点")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/driverArriveStartLocation/{orderId}")
     public Result<Boolean> driverArriveStartLocation(@PathVariable Long orderId) {
         Long driverId = AuthContextHolder.getUserId();
@@ -87,7 +110,7 @@ public class OrderController {
     }
 
     @Operation(summary = "更新代驾车辆信息")
-    @GuiguLogin
+    @zzcLogin
     @PostMapping("/updateOrderCart")
     public Result<Boolean> updateOrderCart(@RequestBody UpdateOrderCartForm updateOrderCartForm) {
         Long driverId = AuthContextHolder.getUserId();
@@ -96,7 +119,7 @@ public class OrderController {
     }
 
     @Operation(summary = "开始代驾服务")
-    @GuiguLogin
+    @zzcLogin
     @PostMapping("/startDrive")
     public Result<Boolean> startDrive(@RequestBody StartDriveForm startDriveForm) {
         Long driverId = AuthContextHolder.getUserId();
@@ -105,34 +128,39 @@ public class OrderController {
     }
 
     @Operation(summary = "结束代驾服务更新订单账单")
-    @GuiguLogin
+    @zzcLogin
     @PostMapping("/endDrive")
     public Result<Boolean> endDrive(@RequestBody OrderFeeForm orderFeeForm) {
-        Long driverId = AuthContextHolder.getUserId();
-        orderFeeForm.setDriverId(driverId);
-        return Result.ok(orderService.endDrive(orderFeeForm));
+    Long driverId = AuthContextHolder.getUserId();
+    orderFeeForm.setDriverId(driverId);
+    return Result.ok(orderService.endDrive(orderFeeForm));
     }
 
+
     @Operation(summary = "获取司机订单分页列表")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("findDriverOrderPage/{page}/{limit}")
     public Result<PageVo> findDriverOrderPage(
-            @Parameter(name = "page", description = "当前页码", required = true)
-            @PathVariable Long page,
+        @Parameter(name = "page", description = "当前页码", required = true)
+        @PathVariable Long page,
 
-            @Parameter(name = "limit", description = "每页记录数", required = true)
-            @PathVariable Long limit) {
+        @Parameter(name = "limit", description = "每页记录数", required = true)
+        @PathVariable Long limit) {
         Long driverId = AuthContextHolder.getUserId();
         PageVo pageVo = orderService.findDriverOrderPage(driverId, page, limit);
         return Result.ok(pageVo);
     }
 
     @Operation(summary = "司机发送账单信息")
-    @GuiguLogin
+    @zzcLogin
     @GetMapping("/sendOrderBillInfo/{orderId}")
     public Result<Boolean> sendOrderBillInfo(@PathVariable Long orderId) {
         Long driverId = AuthContextHolder.getUserId();
         return Result.ok(orderService.sendOrderBillInfo(orderId, driverId));
     }
+
+    
+
+
 }
 

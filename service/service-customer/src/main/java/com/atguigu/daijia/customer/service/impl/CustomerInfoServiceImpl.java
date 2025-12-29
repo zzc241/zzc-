@@ -1,11 +1,6 @@
 package com.atguigu.daijia.customer.service.impl;
 
-import cn.binarywang.wx.miniapp.api.WxMaService;
-import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
-import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import com.alibaba.fastjson.JSON;
-import com.atguigu.daijia.common.execption.GuiguException;
-import com.atguigu.daijia.common.result.ResultCodeEnum;
 import com.atguigu.daijia.customer.mapper.CustomerInfoMapper;
 import com.atguigu.daijia.customer.mapper.CustomerLoginLogMapper;
 import com.atguigu.daijia.customer.service.CustomerInfoService;
@@ -15,9 +10,14 @@ import com.atguigu.daijia.model.form.customer.UpdateWxPhoneForm;
 import com.atguigu.daijia.model.vo.customer.CustomerLoginVo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
+import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,101 +30,93 @@ import org.springframework.util.StringUtils;
 public class CustomerInfoServiceImpl extends ServiceImpl<CustomerInfoMapper, CustomerInfo> implements CustomerInfoService {
 
     @Autowired
-    private WxMaService wxMaService;
-    
-    @Autowired
     private CustomerInfoMapper customerInfoMapper;
-
+    @Autowired
+    private WxMaService wxMaService;
     @Autowired
     private CustomerLoginLogMapper customerLoginLogMapper;
 
-    //微信小程序登录接口
     @Override
-    public Long login(String code) {
-        //1 获取code值，使用微信工具包对象，获取微信唯一标识openid
-        String openid = null;
-        try {
-            WxMaJscode2SessionResult sessionInfo =
-                    wxMaService.getUserService().getSessionInfo(code);
-            openid = sessionInfo.getOpenid();
-        } catch (WxErrorException e) {
-            throw new RuntimeException(e);
-        }
+    public Long login(String code){
+        String openId = null;
 
-        //2 根据openid查询数据库表，判断是否第一次登录
-        //如果openid不存在返回null，如果存在返回一条记录
-        //select * from customer_info ci where ci.wx_open_id = ''
+        //获取code值获取微信openId
+        WxMaJscode2SessionResult sessionInfo;
+        try {
+            sessionInfo = wxMaService.getUserService().getSessionInfo(code);
+            openId = sessionInfo.getOpenid();
+        } catch (WxErrorException e) {
+            e.printStackTrace();
+        }
+        
         LambdaQueryWrapper<CustomerInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomerInfo::getWxOpenId,openid);
+        wrapper.eq(CustomerInfo::getWxOpenId, openId);
         CustomerInfo customerInfo = customerInfoMapper.selectOne(wrapper);
 
-        //3 如果第一次登录，添加信息到用户表
         if(customerInfo == null) {
             customerInfo = new CustomerInfo();
             customerInfo.setNickname(String.valueOf(System.currentTimeMillis()));
             customerInfo.setAvatarUrl("https://oss.aliyuncs.com/aliyun_id_photo_bucket/default_handsome.jpg");
-            customerInfo.setWxOpenId(openid);
+            customerInfo.setWxOpenId(openId);
             customerInfoMapper.insert(customerInfo);
         }
 
-        //4 记录登录日志信息
         CustomerLoginLog customerLoginLog = new CustomerLoginLog();
         customerLoginLog.setCustomerId(customerInfo.getId());
         customerLoginLog.setMsg("小程序登录");
         customerLoginLogMapper.insert(customerLoginLog);
 
-        //5 返回用户id
         return customerInfo.getId();
     }
 
-    //获取客户登录信息
+
     @Override
-    public CustomerLoginVo getCustomerInfo(Long customerId) {
-        //1 根据用户id查询用户信息
-        CustomerInfo customerInfo = customerInfoMapper.selectById(customerId);
-
-        //2 封装到CustomerLoginVo
+    public CustomerLoginVo getCustomerLoginInfo(Long customerId) {
+        CustomerInfo customerinfo = new CustomerInfo();
+        customerinfo = customerInfoMapper.selectById(customerId);
         CustomerLoginVo customerLoginVo = new CustomerLoginVo();
-        //customerLoginVo.setNickname(customerInfo.getNickname());
-        BeanUtils.copyProperties(customerInfo,customerLoginVo);
+        // customerLoginVo.setWxOpenId(customerinfo.getWxOpenId());
+        // customerLoginVo.setNickname(customerinfo.getNickname());
+        // customerLoginVo.setGender(customerinfo.getGender());
+        // customerLoginVo.setAvatarUrl(customerinfo.getAvatarUrl());
+        // customerLoginVo.setIsBindPhone(customerinfo.getPhone() != null);
 
-        //@Schema(description = "是否绑定手机号码")
-        //    private Boolean isBindPhone;
-        String phone = customerInfo.getPhone();
-        boolean isBindPhone = StringUtils.hasText(phone);
-        customerLoginVo.setIsBindPhone(isBindPhone);
+        
+        BeanUtils.copyProperties(customerinfo, customerLoginVo);
 
-        //3 CustomerLoginVo返回
+        // if(customerinfo.getPhone() != null){
+        //     customerLoginVo.setIsBindPhone(true);
+        // }
+        boolean hastext = StringUtils.hasText(customerinfo.getPhone());
+        customerLoginVo.setIsBindPhone(hastext);
         return customerLoginVo;
     }
 
-    ////更新客户微信手机号码
+
+    @SneakyThrows
+    @Transactional(rollbackFor = {Exception.class})
     @Override
     public Boolean updateWxPhoneNumber(UpdateWxPhoneForm updateWxPhoneForm) {
-        //1 根据code值获取微信绑定手机号码
-        try {
-            WxMaPhoneNumberInfo phoneNoInfo =
-                    wxMaService.getUserService().getPhoneNoInfo(updateWxPhoneForm.getCode());
-            String phoneNumber = phoneNoInfo.getPhoneNumber();
+    // 调用微信 API 获取用户的手机号
+    WxMaPhoneNumberInfo phoneInfo = wxMaService.getUserService().getPhoneNoInfo(updateWxPhoneForm.getCode());
+    String phoneNumber = phoneInfo.getPhoneNumber();
+    log.info("phoneInfo:{}", JSON.toJSONString(phoneInfo));
 
-            //更新用户信息
-            Long customerId = updateWxPhoneForm.getCustomerId();
-            CustomerInfo customerInfo = customerInfoMapper.selectById(customerId);
-            customerInfo.setPhone(phoneNumber);
-            customerInfoMapper.updateById(customerInfo);
+    CustomerInfo customerInfo = new CustomerInfo();
+    customerInfo.setId(updateWxPhoneForm.getCustomerId());
+    customerInfo.setPhone(phoneNumber);
+    return this.updateById(customerInfo);
 
-            return true;
-        } catch (WxErrorException e) {
-            throw new GuiguException(ResultCodeEnum.DATA_ERROR);
-        }
     }
+
 
     @Override
     public String getCustomerOpenId(Long customerId) {
         LambdaQueryWrapper<CustomerInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CustomerInfo::getId,customerId);
-        CustomerInfo customerInfo = customerInfoMapper.selectOne(wrapper);
-        return customerInfo.getWxOpenId();
+        wrapper.eq(CustomerInfo::getId, customerId);
+        
+    CustomerInfo customerInfo = this.getOne(wrapper.select(CustomerInfo::getWxOpenId));
+    return customerInfo.getWxOpenId();
     }
 
 }

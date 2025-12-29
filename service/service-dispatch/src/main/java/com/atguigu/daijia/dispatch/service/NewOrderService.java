@@ -1,19 +1,20 @@
 package com.atguigu.daijia.dispatch.service;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.vo.dispatch.NewOrderTaskVo;
 import com.atguigu.daijia.model.vo.order.NewOrderDataVo;
 
-import java.util.List;
-
 public interface NewOrderService {
 
-    ////创建并启动任务调度方法
-    Long addAndStartTask(NewOrderTaskVo newOrderTaskVo);
+    public Long addAndStartTask(NewOrderTaskVo newOrderTaskVo);
 
-    //执行任务：搜索附近代驾司机
-    void executeTask(long jobId);
+    public void executeTask(Long jobId);
 
-    List<NewOrderDataVo> findNewOrderQueueData(Long driverId);
+    public List<NewOrderDataVo> findNewOrderQueueData(Long driverId);
 
-    Boolean clearNewOrderQueueData(Long driverId);
+    public Boolean clearNewOrderQueueData(Long driverId);
 }

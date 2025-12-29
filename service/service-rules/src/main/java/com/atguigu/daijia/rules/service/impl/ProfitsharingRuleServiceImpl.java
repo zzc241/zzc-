@@ -1,5 +1,7 @@
 package com.atguigu.daijia.rules.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.atguigu.daijia.model.entity.rule.ProfitsharingRule;
 import com.atguigu.daijia.model.form.rules.ProfitsharingRuleRequest;
 import com.atguigu.daijia.model.form.rules.ProfitsharingRuleRequestForm;
 import com.atguigu.daijia.model.vo.rules.ProfitsharingRuleResponse;
@@ -7,7 +9,11 @@ import com.atguigu.daijia.model.vo.rules.ProfitsharingRuleResponseVo;
 import com.atguigu.daijia.rules.mapper.ProfitsharingRuleMapper;
 import com.atguigu.daijia.rules.service.ProfitsharingRuleService;
 import com.atguigu.daijia.rules.utils.DroolsHelper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import lombok.extern.slf4j.Slf4j;
+
+import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,31 +26,41 @@ public class ProfitsharingRuleServiceImpl implements ProfitsharingRuleService {
 
     @Autowired
     private ProfitsharingRuleMapper rewardRuleMapper;
-
-    private static final String RULES_CUSTOMER_RULES_DRL = "rules/ProfitsharingRule.drl";
+    @Autowired
+    private KieContainer kieContainer;
 
     @Override
     public ProfitsharingRuleResponseVo calculateOrderProfitsharingFee(ProfitsharingRuleRequestForm profitsharingRuleRequestForm) {
-        //传入参数对象封装
+        
         ProfitsharingRuleRequest profitsharingRuleRequest = new ProfitsharingRuleRequest();
-        profitsharingRuleRequest.setOrderAmount(profitsharingRuleRequestForm.getOrderAmount());
         profitsharingRuleRequest.setOrderNum(profitsharingRuleRequestForm.getOrderNum());
+        profitsharingRuleRequest.setOrderAmount(profitsharingRuleRequestForm.getOrderAmount());
 
-        //创建kieSession
-        KieSession kieSession = DroolsHelper.loadForRule(RULES_CUSTOMER_RULES_DRL);
+        log.info("传入参数：{}" , JSON.toJSONString(profitsharingRuleRequest));
+
+
+        KieSession kieSession = kieContainer.newKieSession();
+        // ProfitsharingRule profitsharingRule = rewardRuleMapper.selectOne(new LambdaQueryWrapper<ProfitsharingRule>().orderByDesc(ProfitsharingRule::getId).last("limit 1"));
+
+        // KieSession kieSession = DroolsHelper.loadForRule(profitsharingRule.getRule());
+
+        ProfitsharingRuleResponse profitsharingRuleResponse = new ProfitsharingRuleResponse();
+        kieSession.setGlobal("profitsharingRuleResponse", profitsharingRuleResponse);
+
+        // 设置订单对象
+        kieSession.insert(profitsharingRuleRequest);
+        // 触发规则
+        kieSession.fireAllRules();
+        // 中止会话
+        kieSession.dispose();
+        log.info("计算结果：{}", JSON.toJSONString(profitsharingRuleResponse));
 
         //封装返回对象
-        ProfitsharingRuleResponse profitsharingRuleResponse = new ProfitsharingRuleResponse();
-        kieSession.setGlobal("profitsharingRuleResponse",profitsharingRuleResponse);
-
-        //触发规则，返回vo对象
-        kieSession.insert(profitsharingRuleRequest);
-        kieSession.fireAllRules();
-        kieSession.dispose();
-
         ProfitsharingRuleResponseVo profitsharingRuleResponseVo = new ProfitsharingRuleResponseVo();
-        BeanUtils.copyProperties(profitsharingRuleResponse,profitsharingRuleResponseVo);
-
+        // profitsharingRuleResponseVo.setProfitsharingRuleId(profitsharingRule.getId());
+        profitsharingRuleResponseVo.setProfitsharingRuleId(0L); 
+        BeanUtils.copyProperties(profitsharingRuleResponse, profitsharingRuleResponseVo);
         return profitsharingRuleResponseVo;
     }
+
 }

@@ -4,6 +4,7 @@ import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.map.service.MapService;
 import com.atguigu.daijia.model.form.map.CalculateDrivingLineForm;
 import com.atguigu.daijia.model.vo.map.DrivingLineVo;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -25,10 +26,12 @@ public class MapController {
 
     @Operation(summary = "计算驾驶线路")
     @PostMapping("/calculateDrivingLine")
-    public Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm
-                                                                  calculateDrivingLineForm) {
+    public Result<DrivingLineVo> calculateDrivingLine(@RequestBody CalculateDrivingLineForm calculateDrivingLineForm) {
+        log.info(calculateDrivingLineForm.toString());
         DrivingLineVo drivingLineVo = mapService.calculateDrivingLine(calculateDrivingLineForm);
         return Result.ok(drivingLineVo);
     }
+
+
 }
 

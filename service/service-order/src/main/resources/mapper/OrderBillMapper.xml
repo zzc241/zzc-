@@ -10,5 +10,5 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
         update order_bill set coupon_amount = #{couponAmount}, pay_amount = pay_amount - #{couponAmount} where order_id = #{orderId}
     </update>
 
-</mapper>
 
+</mapper>

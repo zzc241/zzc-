@@ -18,14 +18,12 @@
             <groupId>com.github.wechatpay-apiv3</groupId>
             <artifactId>wechatpay-java</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.atguigu.daijia</groupId>
             <artifactId>rabbit-util</artifactId>
             <version>1.0</version>
         </dependency>
-
-       <!-- <dependency>
+        <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
         </dependency>
@@ -33,7 +31,7 @@
             <groupId>io.seata</groupId>
             <artifactId>seata-spring-boot-starter</artifactId>
             <version>1.7.1</version>
-        </dependency>-->
+        </dependency>
     </dependencies>
 
     <build>

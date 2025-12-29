@@ -6,7 +6,10 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.atguigu.daijia.driver.mapper.DriverAccountMapper">
 
-	<resultMap id="userAccountMap" type="com.atguigu.daijia.model.entity.driver.DriverAccount" autoMapping="true">
+	<!-- <resultMap id="userAccountMap" type="com.atguigu.daijia.model.entity.driver.DriverAccount" autoMapping="true">
+	</resultMap> -->
+
+	<resultMap id="userAccountMap" type="com.atguigu.daijia.model.entity.driver.DriverAccount">
 	</resultMap>
 
 	<!-- 用于select查询公用抽取的列 -->
@@ -15,9 +18,9 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 	</sql>
 
 	<update id="add">
-		update driver_account
-		set total_amount = total_amount + #{amount}, available_amount = available_amount + #{amount}, total_income_amount = total_income_amount + #{amount}
-		where driver_id = #{driverId}
+	update driver_account
+	set total_amount = total_amount + #{amount}, available_amount = available_amount + #{amount}, total_income_amount = total_income_amount + #{amount}
+	where driver_id = #{driverId}
 	</update>
-</mapper>
 
+</mapper>

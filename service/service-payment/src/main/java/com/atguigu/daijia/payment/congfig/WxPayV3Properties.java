@@ -1,4 +1,4 @@
-package com.atguigu.daijia.payment.config;
+package com.atguigu.daijia.payment.congfig;
 
 import com.wechat.pay.java.core.RSAAutoCertificateConfig;
 import lombok.Data;
@@ -26,11 +26,11 @@ public class WxPayV3Properties {
     @Bean
     public RSAAutoCertificateConfig getConfig(){
         return new RSAAutoCertificateConfig.Builder()
-                .merchantId(this.getMerchantId())
-                .privateKeyFromPath(this.getPrivateKeyPath())
-                .merchantSerialNumber(this.getMerchantSerialNumber())
-                .apiV3Key(this.getApiV3key())
-                .build();
+                        .merchantId(this.getMerchantId())
+                        .privateKeyFromPath(this.getPrivateKeyPath())
+                        .merchantSerialNumber(this.getMerchantSerialNumber())
+                        .apiV3Key(this.getApiV3key())
+                        .build();
 
     }
 }

@@ -16,4 +16,5 @@ public interface CiFeignClient {
      */
     @PostMapping("/ci/textAuditing")
     Result<TextAuditingVo> textAuditing(@RequestBody String content);
+
 }

@@ -10,7 +10,7 @@ public class RabbitService {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
+    
     //发送消息
     public boolean sendMessage(String exchange,
                                String routingkey,

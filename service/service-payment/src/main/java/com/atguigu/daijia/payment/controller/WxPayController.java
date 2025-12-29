@@ -2,17 +2,26 @@ package com.atguigu.daijia.payment.controller;
 
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.payment.PaymentInfoForm;
+import com.atguigu.daijia.model.vo.order.OrderBillVo;
 import com.atguigu.daijia.model.vo.payment.WxPrepayVo;
 import com.atguigu.daijia.payment.service.WxPayService;
+import com.mysql.cj.x.protobuf.MysqlxCrud.Order;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @Tag(name = "微信支付接口")
@@ -21,20 +30,21 @@ import java.util.Map;
 @Slf4j
 public class WxPayController {
 
+
     @Autowired
     private WxPayService wxPayService;
-
     @Operation(summary = "创建微信支付")
-    @PostMapping("/createWxPayment")
+    @PostMapping("/createJsapi")
     public Result<WxPrepayVo> createWxPayment(@RequestBody PaymentInfoForm paymentInfoForm) {
         return Result.ok(wxPayService.createWxPayment(paymentInfoForm));
     }
-
+    
     @Operation(summary = "支付状态查询")
     @GetMapping("/queryPayStatus/{orderNo}")
     public Result queryPayStatus(@PathVariable String orderNo) {
         return Result.ok(wxPayService.queryPayStatus(orderNo));
     }
+
 
     @Operation(summary = "微信支付异步通知接口")
     @PostMapping("/notify")
@@ -57,4 +67,6 @@ public class WxPayController {
         result.put("message", "失败");
         return result;
     }
+
+
 }

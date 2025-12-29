@@ -2,13 +2,16 @@ package com.atguigu.daijia.order.mapper;
 
 import com.atguigu.daijia.model.entity.order.OrderBill;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+
+import feign.Param;
 
 import java.math.BigDecimal;
+
+import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface OrderBillMapper extends BaseMapper<OrderBill> {
 
-    void updateCouponAmount(@Param("orderId") Long orderId, @Param("couponAmount") BigDecimal couponAmount);
+    int updateCouponAmount(@Param("orderId") Long orderId, @Param("couponAmount") BigDecimal couponAmount);
+
 }

@@ -1,5 +1,15 @@
 package com.atguigu.daijia.map.client;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.map.OrderServiceLocationForm;
 import com.atguigu.daijia.model.form.map.SearchNearByDriverForm;
@@ -8,11 +18,6 @@ import com.atguigu.daijia.model.form.map.UpdateOrderLocationForm;
 import com.atguigu.daijia.model.vo.map.NearByDriverVo;
 import com.atguigu.daijia.model.vo.map.OrderLocationVo;
 import com.atguigu.daijia.model.vo.map.OrderServiceLastLocationVo;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @FeignClient(value = "service-map")
 public interface LocationFeignClient {
@@ -33,10 +38,14 @@ public interface LocationFeignClient {
     @DeleteMapping("/map/location/removeDriverLocation/{driverId}")
     Result<Boolean> removeDriverLocation(@PathVariable("driverId") Long driverId);
 
-    //搜索附近满足条件的司机
+
+    /**
+     * 搜索附近满足条件的司机
+     * @param searchNearByDriverForm
+     * @return
+     */
     @PostMapping("/map/location/searchNearByDriver")
-    Result<List<NearByDriverVo>> searchNearByDriver(@RequestBody
-                                                           SearchNearByDriverForm searchNearByDriverForm);
+    Result<List<NearByDriverVo>> searchNearByDriver(@RequestBody SearchNearByDriverForm searchNearByDriverForm);
 
     /**
      * 司机赶往代驾起始点：更新订单地址到缓存
@@ -53,6 +62,8 @@ public interface LocationFeignClient {
      */
     @GetMapping("/map/location/getCacheOrderLocation/{orderId}")
     Result<OrderLocationVo> getCacheOrderLocation(@PathVariable("orderId") Long orderId);
+
+
     /**
      * 开始代驾服务：保存代驾服务订单位置
      * @param orderLocationServiceFormList
@@ -76,5 +87,6 @@ public interface LocationFeignClient {
      */
     @GetMapping("/map/location/calculateOrderRealDistance/{orderId}")
     Result<BigDecimal> calculateOrderRealDistance(@PathVariable Long orderId);
+    }
 
-}
+

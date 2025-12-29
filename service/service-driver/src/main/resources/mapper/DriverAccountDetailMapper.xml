@@ -6,7 +6,9 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 
 <mapper namespace="com.atguigu.daijia.driver.mapper.DriverAccountDetailMapper">
 
-	<resultMap id="RechargeInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverAccountDetail" autoMapping="true">
+	<!-- <resultMap id="RechargeInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverAccountDetail" autoMapping="true">
+	</resultMap> -->
+	<resultMap id="RechargeInfoMap" type="com.atguigu.daijia.model.entity.driver.DriverAccountDetail">
 	</resultMap>
 
 	<sql id="columns">
@@ -14,4 +16,3 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 	</sql>
 
 </mapper>
-

@@ -8,13 +8,19 @@ import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.http.HttpProtocol;
-import com.qcloud.cos.model.ciModel.auditing.*;
+import com.qcloud.cos.model.ciModel.auditing.AuditingJobsDetail;
+import com.qcloud.cos.model.ciModel.auditing.ImageAuditingRequest;
+import com.qcloud.cos.model.ciModel.auditing.ImageAuditingResponse;
+import com.qcloud.cos.model.ciModel.auditing.SectionInfo;
+import com.qcloud.cos.model.ciModel.auditing.TextAuditingRequest;
+import com.qcloud.cos.model.ciModel.auditing.TextAuditingResponse;
 import com.qcloud.cos.region.Region;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @Service
 public class CiServiceImpl implements CiService {
@@ -50,6 +56,20 @@ public class CiServiceImpl implements CiService {
         return true;
     }
 
+    public COSClient getCosClient() {
+        String secretId = tencentCloudProperties.getSecretId();
+        String secretKey = tencentCloudProperties.getSecretKey();
+        COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
+        // 2 设置 bucket 的地域, COS 地域
+        Region region = new Region(tencentCloudProperties.getRegion());
+        ClientConfig clientConfig = new ClientConfig(region);
+        // 这里建议设置使用 https 协议
+        clientConfig.setHttpProtocol(HttpProtocol.https);
+        // 3 生成 cos 客户端。
+        COSClient cosClient = new COSClient(cred, clientConfig);
+        return cosClient;
+    }
+
     @Override
     public TextAuditingVo textAuditing(String content) {
         if(!StringUtils.hasText(content)) {
@@ -57,20 +77,17 @@ public class CiServiceImpl implements CiService {
             textAuditingVo.setResult("0");
             return textAuditingVo;
         }
-
         COSClient cosClient = this.getCosClient();
 
-        //1.创建任务请求对象
         TextAuditingRequest request = new TextAuditingRequest();
-        //2.添加请求参数 参数详情请见 API 接口文档
         request.setBucketName(tencentCloudProperties.getBucketPrivate());
-        //2.1.1设置请求内容,文本内容的Base64编码
+
+        //将图片转换为base64字符串
         byte[] encoder = org.apache.commons.codec.binary.Base64.encodeBase64(content.getBytes());
         String contentBase64 = new String(encoder);
         request.getInput().setContent(contentBase64);
         request.getConf().setDetectType("all");
 
-        //3.调用接口,获取任务响应对象
         TextAuditingResponse response = cosClient.createAuditingTextJobs(request);
         AuditingJobsDetail detail = response.getJobsDetail();
         TextAuditingVo textAuditingVo = new TextAuditingVo();
@@ -82,11 +99,9 @@ public class CiServiceImpl implements CiService {
             StringBuffer keywords = new StringBuffer();
             List<SectionInfo> sectionInfoList = detail.getSectionList();
             for (SectionInfo info : sectionInfoList) {
-
                 String pornInfoKeyword = info.getPornInfo().getKeywords();
                 String illegalInfoKeyword = info.getIllegalInfo().getKeywords();
                 String abuseInfoKeyword = info.getAbuseInfo().getKeywords();
-
                 if (pornInfoKeyword.length() > 0) {
                     keywords.append(pornInfoKeyword).append(",");
                 }
@@ -101,19 +116,5 @@ public class CiServiceImpl implements CiService {
             textAuditingVo.setKeywords(keywords.toString());
         }
         return textAuditingVo;
-    }
-
-    public COSClient getCosClient() {
-        String secretId = tencentCloudProperties.getSecretId();
-        String secretKey = tencentCloudProperties.getSecretKey();
-        COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
-        // 2 设置 bucket 的地域, COS 地域
-        Region region = new Region(tencentCloudProperties.getRegion());
-        ClientConfig clientConfig = new ClientConfig(region);
-        // 这里建议设置使用 https 协议
-        clientConfig.setHttpProtocol(HttpProtocol.https);
-        // 3 生成 cos 客户端。
-        COSClient cosClient = new COSClient(cred, clientConfig);
-        return cosClient;
     }
 }

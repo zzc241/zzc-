@@ -1,5 +1,14 @@
 package com.atguigu.daijia.coupon.client;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import com.atguigu.daijia.common.result.Result;
 import com.atguigu.daijia.model.form.coupon.UseCouponForm;
 import com.atguigu.daijia.model.vo.base.PageVo;
@@ -7,14 +16,6 @@ import com.atguigu.daijia.model.vo.coupon.AvailableCouponVo;
 import com.atguigu.daijia.model.vo.coupon.NoReceiveCouponVo;
 import com.atguigu.daijia.model.vo.coupon.NoUseCouponVo;
 import com.atguigu.daijia.model.vo.coupon.UsedCouponVo;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 
 @FeignClient(value = "service-coupon")
@@ -33,6 +34,7 @@ public interface CouponFeignClient {
             @PathVariable("page") Long page,
             @PathVariable("limit") Long limit);
 
+
     /**
      * 查询未使用优惠券分页列表
      * @param customerId
@@ -45,6 +47,20 @@ public interface CouponFeignClient {
             @PathVariable("customerId") Long customerId,
             @PathVariable("page") Long page,
             @PathVariable("limit") Long limit);
+
+    /**
+     * 查询已使用优惠券分页列表
+     * @param customerId
+     * @param page
+     * @param limit
+     * @return
+     */
+    @GetMapping("/coupon/info/findUsedPage/{customerId}/{page}/{limit}")
+    Result<PageVo<UsedCouponVo>> findUsedPage(
+            @PathVariable("customerId") Long customerId,
+            @PathVariable("page") Long page,
+            @PathVariable("limit") Long limit);
+
 
     /**
      * 领取优惠券
@@ -71,19 +87,5 @@ public interface CouponFeignClient {
      */
     @PostMapping("/coupon/info/useCoupon")
     Result<BigDecimal> useCoupon(@RequestBody UseCouponForm useCouponForm);
-
-
-    /**
-     * 查询已使用优惠券分页列表
-     * @param customerId
-     * @param page
-     * @param limit
-     * @return
-     */
-    @GetMapping("/coupon/info/findUsedPage/{customerId}/{page}/{limit}")
-    Result<PageVo<UsedCouponVo>> findUsedPage(
-            @PathVariable("customerId") Long customerId,
-            @PathVariable("page") Long page,
-            @PathVariable("limit") Long limit);
 
 }
